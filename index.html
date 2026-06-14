@@ -1,0 +1,1771 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>⚽ Porra Tribuneros 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ── TOKENS ── */
+    :root {
+      --pitch:    #0a1a2e;
+      --grass:    #0f2c4a;
+      --lime:     #35c8f1;
+      --gold:     #f5c842;
+      --white:    #f0f4f0;
+      --muted:    #7a9485;
+      --card:     #111d2b;
+      --border:   #1e304a;
+      --red:      #e85555;
+      --radius:   6px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--pitch);
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--grass);
+      border-bottom: 3px solid var(--lime);
+      padding: 0 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      height: 58px;
+    }
+
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.7rem;
+      letter-spacing: 0.08em;
+      color: var(--lime);
+      white-space: nowrap;
+    }
+
+    .logo span { color: var(--gold); }
+
+    .header-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    /* ── HERO STRIP ── */
+    .hero {
+      background: linear-gradient(135deg, var(--grass) 0%, #0d2233 100%);
+      padding: 2rem 1.5rem 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      line-height: 0.95;
+      color: var(--white);
+    }
+
+    .hero-title em {
+      font-style: normal;
+      color: var(--lime);
+      display: block;
+    }
+
+    .stat-pills {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 0.45rem 1rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .pill .num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.2rem;
+      color: var(--lime);
+      line-height: 1;
+    }
+
+    /* ── TABS ── */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      background: var(--pitch);
+      padding: 0 1.5rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .tabs::-webkit-scrollbar { display: none; }
+
+    .tab {
+      padding: 0.9rem 1.2rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+      transition: color 0.15s, border-color 0.15s;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+    }
+
+    .tab:hover { color: var(--white); }
+    .tab.active { color: var(--lime); border-bottom-color: var(--lime); }
+
+    /* ── CONTENT ── */
+    .content {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--lime);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── RANKING TABLE ── */
+    .ranking-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    .ranking-table th {
+      text-align: left;
+      padding: 0.6rem 0.75rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ranking-table td {
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    .ranking-table tr:hover td { background: var(--card); }
+
+    .pos {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.3rem;
+      color: var(--muted);
+      width: 2rem;
+      text-align: center;
+    }
+
+    .pos.gold   { color: var(--gold); }
+    .pos.silver { color: #bcc0c0; }
+    .pos.bronze { color: #c8865a; }
+
+    .player-name {
+      font-weight: 600;
+      color: var(--white);
+    }
+
+    .pts {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem;
+      color: var(--lime);
+      text-align: right;
+    }
+
+    .sub-stat {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 3px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .badge-exact { background: #1a1a4a; color: var(--lime); }
+    .badge-sign  { background: #1a2a3a; color: #9fc050; }
+    .badge-miss  { background: #3a1a1a; color: var(--red); }
+
+    /* ── MATCHES ── */
+    .match-group { margin-bottom: 2rem; }
+
+    .match-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.85rem 1rem;
+      margin-bottom: 0.5rem;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .team {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .team.home { text-align: right; }
+    .team.away { text-align: left; }
+
+    .score-box {
+      text-align: center;
+    }
+
+    .score {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      color: var(--lime);
+      letter-spacing: 0.05em;
+      line-height: 1;
+    }
+
+    .score.pending { color: var(--muted); font-size: 1.1rem; }
+
+    .match-meta {
+      font-size: 0.7rem;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ── PICKS ── */
+    .pick-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.82rem;
+    }
+
+    .pick-row:last-child { border-bottom: none; }
+    .pick-result { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+    .pick-exact { color: var(--lime); }
+    .pick-sign  { color: #9fc050; }
+    .pick-miss  { color: var(--red); }
+    .pick-pending { color: var(--muted); }
+
+    /* ── PLAYER SELECTOR ── */
+    .player-select-wrap {
+      margin-bottom: 1.5rem;
+    }
+
+    .player-select-wrap label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    select {
+      width: 100%;
+      max-width: 320px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--white);
+      padding: 0.6rem 0.8rem;
+      font-size: 0.9rem;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237a9485' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+    }
+
+    select:focus { outline: 2px solid var(--lime); }
+
+    /* ── CHAMPION SECTION ── */
+    .champion-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+
+    .champion-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.85rem 1rem;
+    }
+
+    .champion-card .champ-name { font-weight: 600; margin-bottom: 0.25rem; }
+    .champion-card .champ-pick { font-size: 0.82rem; color: var(--muted); }
+    .champion-card .champ-pick strong { color: var(--white); }
+    .champion-card.hit { border-color: var(--lime); }
+    .champion-card.hit .champ-pick strong { color: var(--lime); }
+
+    /* ── LOADING / EMPTY ── */
+    .loading {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+    }
+
+    .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--lime);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-msg {
+      background: #2a1010;
+      border: 1px solid #5a2020;
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      color: #e88;
+      font-size: 0.85rem;
+    }
+
+    /* ── CONFIG NOTICE ── */
+    .config-notice {
+      background: #101e2e;
+      border: 1px solid var(--lime);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.83rem;
+      color: #80d8f0;
+    }
+
+    .config-notice strong { color: var(--lime); display: block; margin-bottom: 0.25rem; }
+    .config-notice code {
+      background: #08102f;
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--lime);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      .match-card { grid-template-columns: 1fr; text-align: center; gap: 0.25rem; }
+      .team.home, .team.away { text-align: center; }
+      .hero { padding: 1.5rem 1rem 1rem; }
+      .content { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Porra <span>Tribuneros</span> 2026</div>
+  <div class="header-meta" id="last-updated">Cargando...</div>
+</header>
+
+<div class="hero">
+  <div>
+    <div class="hero-title">Clasificación<em>en vivo</em></div>
+  </div>
+  <div class="stat-pills">
+    <div class="pill"><span class="num" id="hero-players">—</span> participantes</div>
+    <div class="pill"><span class="num" id="hero-matches">—</span> partidos jugados</div>
+    <div class="pill">🏆 <span id="hero-leader" style="font-size:0.85rem;font-weight:600;">—</span></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('ranking', this)">🏆 Clasificación</button>
+  <button class="tab" onclick="switchTab('upcoming', this)">🔜 Próximos</button>
+  <button class="tab" onclick="switchTab('matches', this)">📅 Partidos</button>
+  <button class="tab" onclick="switchTab('picks', this)">🎯 Pronósticos</button>
+  <button class="tab" onclick="switchTab('champion', this)">⭐ Predicciones</button>
+  <button class="tab" onclick="switchTab('awards', this)">🥾 Premios</button>
+</div>
+
+<div class="content">
+
+  <!-- ══ RANKING ══ -->
+  <div id="panel-ranking" class="panel active">
+    <div class="section-label">Clasificación general</div>
+    <div id="ranking-content"><div class="loading"><div class="spinner"></div>Cargando datos...</div></div>
+  </div>
+
+  <!-- ══ PRÓXIMOS PARTIDOS ══ -->
+  <div id="panel-upcoming" class="panel">
+    <div class="section-label">Próximos 5 partidos · pronósticos de todos</div>
+    <div id="upcoming-content"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
+  </div>
+
+  <!-- ══ MATCHES ══ -->
+  <div id="panel-matches" class="panel">
+    <div class="section-label">Resultados y próximos partidos</div>
+    <div id="matches-content"><div class="loading"><div class="spinner"></div>Cargando partidos...</div></div>
+  </div>
+
+  <!-- ══ PICKS ══ -->
+  <div id="panel-picks" class="panel">
+    <div class="player-select-wrap">
+      <label>Ver pronósticos de:</label>
+      <select id="player-selector" onchange="renderPicks()">
+        <option value="">— Selecciona un participante —</option>
+      </select>
+    </div>
+    <div id="picks-content"></div>
+  </div>
+
+  <!-- ══ PREDICCIONES FINALES ══ -->
+  <div id="panel-champion" class="panel">
+    <div class="section-label">Predicciones finales · Campeón / Subcampeón / 3.º</div>
+    <div id="champion-content"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
+  </div>
+
+  <!-- ══ PREMIOS INDIVIDUALES ══ -->
+  <div id="panel-awards" class="panel">
+    <div class="section-label">Premios individuales · Bota de Oro · Balón de Oro</div>
+    <div id="awards-content"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  CONFIGURACIÓN — edita estos valores
+// ══════════════════════════════════════════════
+const CONFIG = {
+  // 1. Abre tu Google Sheet → Archivo → Compartir → Publicar en la web
+  //    Elige la hoja "Partidos" y formato CSV. Pega la URL aquí:
+  SHEET_PARTIDOS_URL: 'TU_URL_HOJA_PARTIDOS_CSV_AQUI',
+
+  // 2. Haz lo mismo para la hoja "Pronósticos":
+  SHEET_PRONOSTICOS_URL: 'TU_URL_HOJA_PRONOSTICOS_CSV_AQUI',
+
+  // 3. Puntuación por fase — partido
+  //    signo   = acertar 1/X/2
+  //    diff    = diferencia de goles correcta (requiere signo acertado)
+  //    exacto  = resultado exacto (suma encima del signo, no en lugar)
+  PTS: {
+    'Fase de grupos': { signo: 2, diff: 1, exacto: 2, clasificado: 4, posicion: 3 },
+    'Dieciseisavos':  { signo: 3, diff: 2, exacto: 3, clasificado: 5 },
+    'Octavos':        { signo: 3, diff: 2, exacto: 3, clasificado: 5 },
+    'Cuartos':        { signo: 4, diff: 2, exacto: 4, clasificado: 6 },
+    'Semifinal':      { signo: 5, diff: 2, exacto: 5, clasificado_3y4: 6, clasificado_final: 8 },
+    '3er puesto':     { signo: 4, diff: 2, exacto: 4 },
+    'Final':          { signo: 6, diff: 3, exacto: 6 },
+  },
+
+  // 4. Predicciones finales
+  PTS_CAMPEON:    12,
+  PTS_SUBCAMPEON: 6,
+  PTS_TERCERO:    4,
+
+  // 5. Premios individuales
+  PTS_BOTA_ORO:      6,
+  PTS_BOTA_PLATA:    4,
+  PTS_BOTA_BRONCE:   2,
+  PTS_BALON_ORO:     6,
+  PTS_BALON_PLATA:   4,
+  PTS_BALON_BRONCE:  2,
+
+  // 6. Nombre del torneo
+  NOMBRE: 'Porra Tribuneros 2026',
+};
+// ══════════════════════════════════════════════
+
+// ── DATOS DEL EXCEL (Tribuneros.xlsx) ──
+// Para actualizar resultados: edita resultados.json en GitHub directamente
+const DATOS_PARTIDOS_CSV = `id,fase,local,visitante,gL,gV,fecha,bonus
+1,Fase de grupos,México,Sudáfrica,2,0,11 Jun,1
+2,Fase de grupos,Corea del Sur,República Checa,2,1,12 Jun,1
+3,Fase de grupos,Canadá,Bosnia y Herzegovina,1,1,12 Jun,1
+4,Fase de grupos,Catar,Suiza,1,1,13 Jun,1
+5,Fase de grupos,Brasil,Marruecos,1,1,14 Jun,2
+6,Fase de grupos,Haití,Escocia,0,1,14 Jun,1
+7,Fase de grupos,Estados Unidos,Paraguay,4,1,13 Jun,1
+8,Fase de grupos,Australia,Turquía,2,0,14 Jun,1
+9,Fase de grupos,Alemania,Curazao,,,14 Jun,1
+10,Fase de grupos,Costa de Marfil,Ecuador,,,15 Jun,1
+11,Fase de grupos,Países Bajos,Japón,,,15 Jun,1
+12,Fase de grupos,Suecia,Túnez,,,15 Jun,1
+13,Fase de grupos,Bélgica,Egipto,,,15 Jun,2
+14,Fase de grupos,Irán,Nueva Zelanda,,,16 Jun,1
+15,Fase de grupos,España,Cabo Verde,,,15 Jun,1
+16,Fase de grupos,Arabia Saudita,Uruguay,,,16 Jun,1
+17,Fase de grupos,Francia,Senegal,,,16 Jun,1
+18,Fase de grupos,Irak,Noruega,,,17 Jun,1
+19,Fase de grupos,Argentina,Argelia,,,17 Jun,1
+20,Fase de grupos,Austria,Jordania,,,17 Jun,1
+21,Fase de grupos,Portugal,RD Congo,,,17 Jun,2
+22,Fase de grupos,Uzbekistán,Colombia,,,18 Jun,1
+23,Fase de grupos,Inglaterra,Croacia,,,18 Jun,2
+24,Fase de grupos,Ghana,Panamá,,,18 Jun,1
+25,Fase de grupos,República Checa,Sudáfrica,,,18 Jun,2
+26,Fase de grupos,México,Corea del Sur,,,19 Jun,1
+27,Fase de grupos,Suiza,Bosnia y Herzegovina,,,18 Jun,2
+28,Fase de grupos,Canadá,Catar,,,19 Jun,1
+29,Fase de grupos,Escocia,Marruecos,,,20 Jun,1
+30,Fase de grupos,Brasil,Haití,,,20 Jun,1
+31,Fase de grupos,Estados Unidos,Australia,,,19 Jun,2
+32,Fase de grupos,Turquía,Paraguay,,,20 Jun,1
+33,Fase de grupos,Alemania,Costa de Marfil,,,21 Jun,1
+34,Fase de grupos,Ecuador,Curazao,,,21 Jun,1
+35,Fase de grupos,Países Bajos,Suecia,,,20 Jun,2
+36,Fase de grupos,Túnez,Japón,,,21 Jun,1
+37,Fase de grupos,Bélgica,Irán,,,21 Jun,1
+38,Fase de grupos,Nueva Zelanda,Egipto,,,22 Jun,1
+39,Fase de grupos,España,Arabia Saudita,,,21 Jun,2
+40,Fase de grupos,Uruguay,Cabo Verde,,,22 Jun,1
+41,Fase de grupos,Francia,Irak,,,23 Jun,1
+42,Fase de grupos,Noruega,Senegal,,,23 Jun,1
+43,Fase de grupos,Argentina,Austria,,,22 Jun,2
+44,Fase de grupos,Jordania,Argelia,,,23 Jun,1
+45,Fase de grupos,Portugal,Uzbekistán,,,23 Jun,1
+46,Fase de grupos,Colombia,RD Congo,,,24 Jun,1
+47,Fase de grupos,Inglaterra,Ghana,,,24 Jun,1
+48,Fase de grupos,Panamá,Croacia,,,24 Jun,1
+49,Fase de grupos,República Checa,México,,,25 Jun,1
+50,Fase de grupos,Sudáfrica,Corea del Sur,,,25 Jun,1
+51,Fase de grupos,Suiza,Canadá,,,24 Jun,1
+52,Fase de grupos,Bosnia y Herzegovina,Catar,,,24 Jun,1
+53,Fase de grupos,Escocia,Brasil,,,25 Jun,1
+54,Fase de grupos,Marruecos,Haití,,,25 Jun,1
+55,Fase de grupos,Turquía,Estados Unidos,,,26 Jun,1
+56,Fase de grupos,Paraguay,Australia,,,26 Jun,1
+57,Fase de grupos,Curazao,Costa de Marfil,,,26 Jun,1
+58,Fase de grupos,Ecuador,Alemania,,,26 Jun,2
+59,Fase de grupos,Japón,Suecia,,,26 Jun,1
+60,Fase de grupos,Túnez,Países Bajos,,,26 Jun,1
+61,Fase de grupos,Egipto,Irán,,,27 Jun,1
+62,Fase de grupos,Nueva Zelanda,Bélgica,,,27 Jun,1
+63,Fase de grupos,Cabo Verde,Arabia Saudita,,,27 Jun,1
+64,Fase de grupos,Uruguay,España,,,27 Jun,1
+65,Fase de grupos,Noruega,Francia,,,26 Jun,2
+66,Fase de grupos,Senegal,Irak,,,26 Jun,1
+67,Fase de grupos,Argelia,Austria,,,28 Jun,1
+68,Fase de grupos,Jordania,Argentina,,,28 Jun,1
+69,Fase de grupos,Colombia,Portugal,,,28 Jun,1
+70,Fase de grupos,RD Congo,Uzbekistán,,,28 Jun,1
+71,Fase de grupos,Panamá,Inglaterra,,,28 Jun,1
+72,Fase de grupos,Croacia,Ghana,,,28 Jun,1
+`;
+const DATOS_PRONOSTICOS_CSV = `jugador,partido_id,gL,gV,campeon,subcampeon,tercero,bota_oro,bota_plata,bota_bronce,balon_oro,balon_plata,balon_bronce
+Dani,1,2,1,,,,,,,,,
+ruly,1,1,0,,,,,,,,,
+Arnau Jorba,1,2,0,,,,,,,,,
+Fer,1,2,0,,,,,,,,,
+Fran,1,3,1,,,,,,,,,
+JLABALOS,1,2,0,,,,,,,,,
+Crivi,1,2,1,,,,,,,,,
+Castillo,1,1,1,,,,,,,,,
+Dani,2,0,1,,,,,,,,,
+ruly,2,0,0,,,,,,,,,
+Arnau Jorba,2,1,1,,,,,,,,,
+Fer,2,1,2,,,,,,,,,
+Fran,2,1,0,,,,,,,,,
+JLABALOS,2,1,1,,,,,,,,,
+Crivi,2,1,1,,,,,,,,,
+Castillo,2,1,2,,,,,,,,,
+Dani,3,1,1,,,,,,,,,
+ruly,3,1,0,,,,,,,,,
+Arnau Jorba,3,1,1,,,,,,,,,
+Fer,3,0,1,,,,,,,,,
+Fran,3,1,0,,,,,,,,,
+JLABALOS,3,2,1,,,,,,,,,
+Crivi,3,1,2,,,,,,,,,
+Castillo,3,2,1,,,,,,,,,
+Dani,4,0,2,,,,,,,,,
+ruly,4,0,2,,,,,,,,,
+Arnau Jorba,4,0,2,,,,,,,,,
+Fer,4,1,2,,,,,,,,,
+Fran,4,0,2,,,,,,,,,
+JLABALOS,4,0,2,,,,,,,,,
+Crivi,4,1,3,,,,,,,,,
+Castillo,4,1,3,,,,,,,,,
+Dani,5,2,1,,,,,,,,,
+ruly,5,2,2,,,,,,,,,
+Arnau Jorba,5,3,2,,,,,,,,,
+Fer,5,3,1,,,,,,,,,
+Fran,5,1,1,,,,,,,,,
+JLABALOS,5,2,1,,,,,,,,,
+Crivi,5,2,1,,,,,,,,,
+Castillo,5,2,1,,,,,,,,,
+Dani,6,0,2,,,,,,,,,
+ruly,6,0,4,,,,,,,,,
+Arnau Jorba,6,1,2,,,,,,,,,
+Fer,6,0,2,,,,,,,,,
+Fran,6,0,2,,,,,,,,,
+JLABALOS,6,0,2,,,,,,,,,
+Crivi,6,1,3,,,,,,,,,
+Castillo,6,0,2,,,,,,,,,
+Dani,7,1,1,,,,,,,,,
+ruly,7,2,1,,,,,,,,,
+Arnau Jorba,7,2,0,,,,,,,,,
+Fer,7,2,0,,,,,,,,,
+Fran,7,2,1,,,,,,,,,
+JLABALOS,7,1,0,,,,,,,,,
+Crivi,7,1,1,,,,,,,,,
+Castillo,7,2,0,,,,,,,,,
+Dani,8,1,2,,,,,,,,,
+ruly,8,0,2,,,,,,,,,
+Arnau Jorba,8,0,2,,,,,,,,,
+Fer,8,1,2,,,,,,,,,
+Fran,8,0,2,,,,,,,,,
+JLABALOS,8,1,2,,,,,,,,,
+Crivi,8,1,3,,,,,,,,,
+Castillo,8,0,1,,,,,,,,,
+Dani,9,4,0,,,,,,,,,
+ruly,9,7,0,,,,,,,,,
+Arnau Jorba,9,3,0,,,,,,,,,
+Fer,9,3,0,,,,,,,,,
+Fran,9,4,0,,,,,,,,,
+JLABALOS,9,4,0,,,,,,,,,
+Crivi,9,5,0,,,,,,,,,
+Castillo,9,4,1,,,,,,,,,
+Dani,10,1,1,,,,,,,,,
+ruly,10,2,0,,,,,,,,,
+Arnau Jorba,10,1,1,,,,,,,,,
+Fer,10,2,1,,,,,,,,,
+Fran,10,1,1,,,,,,,,,
+JLABALOS,10,1,2,,,,,,,,,
+Crivi,10,1,1,,,,,,,,,
+Castillo,10,1,1,,,,,,,,,
+Dani,11,2,1,,,,,,,,,
+ruly,11,2,0,,,,,,,,,
+Arnau Jorba,11,2,1,,,,,,,,,
+Fer,11,3,1,,,,,,,,,
+Fran,11,2,1,,,,,,,,,
+JLABALOS,11,2,1,,,,,,,,,
+Crivi,11,2,1,,,,,,,,,
+Castillo,11,2,1,,,,,,,,,
+Dani,12,1,0,,,,,,,,,
+ruly,12,0,3,,,,,,,,,
+Arnau Jorba,12,2,1,,,,,,,,,
+Fer,12,2,0,,,,,,,,,
+Fran,12,1,0,,,,,,,,,
+JLABALOS,12,1,0,,,,,,,,,
+Crivi,12,2,1,,,,,,,,,
+Castillo,12,0,0,,,,,,,,,
+Dani,13,2,0,,,,,,,,,
+ruly,13,3,1,,,,,,,,,
+Arnau Jorba,13,2,1,,,,,,,,,
+Fer,13,2,1,,,,,,,,,
+Fran,13,2,0,,,,,,,,,
+JLABALOS,13,2,0,,,,,,,,,
+Crivi,13,1,1,,,,,,,,,
+Castillo,13,2,0,,,,,,,,,
+Dani,14,1,1,,,,,,,,,
+ruly,14,0,0,,,,,,,,,
+Arnau Jorba,14,0,0,,,,,,,,,
+Fer,14,1,1,,,,,,,,,
+Fran,14,1,0,,,,,,,,,
+JLABALOS,14,1,1,,,,,,,,,
+Crivi,14,2,0,,,,,,,,,
+Castillo,14,0,0,,,,,,,,,
+Dani,15,4,0,,,,,,,,,
+ruly,15,8,0,,,,,,,,,
+Arnau Jorba,15,4,1,,,,,,,,,
+Fer,15,6,0,,,,,,,,,
+Fran,15,5,0,,,,,,,,,
+JLABALOS,15,3,0,,,,,,,,,
+Crivi,15,5,0,,,,,,,,,
+Castillo,15,3,0,,,,,,,,,
+Dani,16,1,2,,,,,,,,,
+ruly,16,0,1,,,,,,,,,
+Arnau Jorba,16,1,2,,,,,,,,,
+Fer,16,1,2,,,,,,,,,
+Fran,16,0,2,,,,,,,,,
+JLABALOS,16,1,2,,,,,,,,,
+Crivi,16,1,2,,,,,,,,,
+Castillo,16,1,2,,,,,,,,,
+Dani,17,2,0,,,,,,,,,
+ruly,17,2,1,,,,,,,,,
+Arnau Jorba,17,3,1,,,,,,,,,
+Fer,17,2,1,,,,,,,,,
+Fran,17,2,0,,,,,,,,,
+JLABALOS,17,3,1,,,,,,,,,
+Crivi,17,2,2,,,,,,,,,
+Castillo,17,3,1,,,,,,,,,
+Dani,18,0,3,,,,,,,,,
+ruly,18,0,2,,,,,,,,,
+Arnau Jorba,18,1,3,,,,,,,,,
+Fer,18,0,2,,,,,,,,,
+Fran,18,0,1,,,,,,,,,
+JLABALOS,18,0,1,,,,,,,,,
+Crivi,18,1,3,,,,,,,,,
+Castillo,18,0,2,,,,,,,,,
+Dani,19,3,0,,,,,,,,,
+ruly,19,1,0,,,,,,,,,
+Arnau Jorba,19,2,1,,,,,,,,,
+Fer,19,2,0,,,,,,,,,
+Fran,19,3,0,,,,,,,,,
+JLABALOS,19,2,0,,,,,,,,,
+Crivi,19,3,1,,,,,,,,,
+Castillo,19,2,0,,,,,,,,,
+Dani,20,2,0,,,,,,,,,
+ruly,20,3,0,,,,,,,,,
+Arnau Jorba,20,1,0,,,,,,,,,
+Fer,20,2,0,,,,,,,,,
+Fran,20,2,0,,,,,,,,,
+JLABALOS,20,1,0,,,,,,,,,
+Crivi,20,2,0,,,,,,,,,
+Castillo,20,1,0,,,,,,,,,
+Dani,21,4,0,,,,,,,,,
+ruly,21,3,0,,,,,,,,,
+Arnau Jorba,21,3,0,,,,,,,,,
+Fer,21,3,0,,,,,,,,,
+Fran,21,4,0,,,,,,,,,
+JLABALOS,21,2,0,,,,,,,,,
+Crivi,21,5,1,,,,,,,,,
+Castillo,21,2,0,,,,,,,,,
+Dani,22,0,3,,,,,,,,,
+ruly,22,0,2,,,,,,,,,
+Arnau Jorba,22,0,2,,,,,,,,,
+Fer,22,0,2,,,,,,,,,
+Fran,22,0,3,,,,,,,,,
+JLABALOS,22,0,3,,,,,,,,,
+Crivi,22,1,3,,,,,,,,,
+Castillo,22,0,2,,,,,,,,,
+Dani,23,2,1,,,,,,,,,
+ruly,23,2,2,,,,,,,,,
+Arnau Jorba,23,2,2,,,,,,,,,
+Fer,23,1,1,,,,,,,,,
+Fran,23,2,1,,,,,,,,,
+JLABALOS,23,2,1,,,,,,,,,
+Crivi,23,3,1,,,,,,,,,
+Castillo,23,1,1,,,,,,,,,
+Dani,24,1,1,,,,,,,,,
+ruly,24,3,0,,,,,,,,,
+Arnau Jorba,24,1,0,,,,,,,,,
+Fer,24,2,0,,,,,,,,,
+Fran,24,3,0,,,,,,,,,
+JLABALOS,24,1,0,,,,,,,,,
+Crivi,24,2,1,,,,,,,,,
+Castillo,24,2,1,,,,,,,,,
+Dani,25,1,0,,,,,,,,,
+ruly,25,0,0,,,,,,,,,
+Arnau Jorba,25,3,1,,,,,,,,,
+Fer,25,1,0,,,,,,,,,
+Fran,25,1,0,,,,,,,,,
+JLABALOS,25,1,0,,,,,,,,,
+Crivi,25,1,2,,,,,,,,,
+Castillo,25,2,1,,,,,,,,,
+Dani,26,1,0,,,,,,,,,
+ruly,26,1,0,,,,,,,,,
+Arnau Jorba,26,2,1,,,,,,,,,
+Fer,26,1,1,,,,,,,,,
+Fran,26,2,1,,,,,,,,,
+JLABALOS,26,3,1,,,,,,,,,
+Crivi,26,1,0,,,,,,,,,
+Castillo,26,2,1,,,,,,,,,
+Dani,27,1,0,,,,,,,,,
+ruly,27,3,0,,,,,,,,,
+Arnau Jorba,27,2,1,,,,,,,,,
+Fer,27,3,2,,,,,,,,,
+Fran,27,2,1,,,,,,,,,
+JLABALOS,27,1,0,,,,,,,,,
+Crivi,27,2,2,,,,,,,,,
+Castillo,27,2,1,,,,,,,,,
+Dani,28,2,1,,,,,,,,,
+ruly,28,1,0,,,,,,,,,
+Arnau Jorba,28,2,0,,,,,,,,,
+Fer,28,1,1,,,,,,,,,
+Fran,28,3,1,,,,,,,,,
+JLABALOS,28,1,0,,,,,,,,,
+Crivi,28,1,2,,,,,,,,,
+Castillo,28,1,1,,,,,,,,,
+Dani,29,1,2,,,,,,,,,
+ruly,29,1,3,,,,,,,,,
+Arnau Jorba,29,0,1,,,,,,,,,
+Fer,29,1,2,,,,,,,,,
+Fran,29,0,2,,,,,,,,,
+JLABALOS,29,0,1,,,,,,,,,
+Crivi,29,1,2,,,,,,,,,
+Castillo,29,1,3,,,,,,,,,
+Dani,30,4,0,,,,,,,,,
+ruly,30,5,0,,,,,,,,,
+Arnau Jorba,30,4,0,,,,,,,,,
+Fer,30,4,0,,,,,,,,,
+Fran,30,5,0,,,,,,,,,
+JLABALOS,30,4,0,,,,,,,,,
+Crivi,30,4,0,,,,,,,,,
+Castillo,30,4,0,,,,,,,,,
+Dani,31,1,0,,,,,,,,,
+ruly,31,2,0,,,,,,,,,
+Arnau Jorba,31,2,1,,,,,,,,,
+Fer,31,1,0,,,,,,,,,
+Fran,31,1,0,,,,,,,,,
+JLABALOS,31,2,0,,,,,,,,,
+Crivi,31,1,0,,,,,,,,,
+Castillo,31,3,1,,,,,,,,,
+Dani,32,2,1,,,,,,,,,
+ruly,32,2,1,,,,,,,,,
+Arnau Jorba,32,1,0,,,,,,,,,
+Fer,32,2,2,,,,,,,,,
+Fran,32,1,0,,,,,,,,,
+JLABALOS,32,1,1,,,,,,,,,
+Crivi,32,2,2,,,,,,,,,
+Castillo,32,2,1,,,,,,,,,
+Dani,33,2,1,,,,,,,,,
+ruly,33,4,1,,,,,,,,,
+Arnau Jorba,33,3,1,,,,,,,,,
+Fer,33,2,0,,,,,,,,,
+Fran,33,2,0,,,,,,,,,
+JLABALOS,33,2,0,,,,,,,,,
+Crivi,33,3,2,,,,,,,,,
+Castillo,33,3,1,,,,,,,,,
+Dani,34,2,0,,,,,,,,,
+ruly,34,1,1,,,,,,,,,
+Arnau Jorba,34,1,0,,,,,,,,,
+Fer,34,3,1,,,,,,,,,
+Fran,34,3,0,,,,,,,,,
+JLABALOS,34,3,0,,,,,,,,,
+Crivi,34,3,0,,,,,,,,,
+Castillo,34,1,0,,,,,,,,,
+Dani,35,1,1,,,,,,,,,
+ruly,35,2,0,,,,,,,,,
+Arnau Jorba,35,2,1,,,,,,,,,
+Fer,35,2,0,,,,,,,,,
+Fran,35,3,0,,,,,,,,,
+JLABALOS,35,2,1,,,,,,,,,
+Crivi,35,2,0,,,,,,,,,
+Castillo,35,2,1,,,,,,,,,
+Dani,36,1,1,,,,,,,,,
+ruly,36,1,1,,,,,,,,,
+Arnau Jorba,36,0,1,,,,,,,,,
+Fer,36,0,2,,,,,,,,,
+Fran,36,0,3,,,,,,,,,
+JLABALOS,36,0,2,,,,,,,,,
+Crivi,36,2,2,,,,,,,,,
+Castillo,36,1,2,,,,,,,,,
+Dani,37,2,0,,,,,,,,,
+ruly,37,4,0,,,,,,,,,
+Arnau Jorba,37,1,0,,,,,,,,,
+Fer,37,2,0,,,,,,,,,
+Fran,37,2,1,,,,,,,,,
+JLABALOS,37,2,0,,,,,,,,,
+Crivi,37,2,1,,,,,,,,,
+Castillo,37,1,1,,,,,,,,,
+Dani,38,1,1,,,,,,,,,
+ruly,38,1,3,,,,,,,,,
+Arnau Jorba,38,0,2,,,,,,,,,
+Fer,38,1,2,,,,,,,,,
+Fran,38,0,1,,,,,,,,,
+JLABALOS,38,1,2,,,,,,,,,
+Crivi,38,1,4,,,,,,,,,
+Castillo,38,0,2,,,,,,,,,
+Dani,39,3,0,,,,,,,,,
+ruly,39,3,0,,,,,,,,,
+Arnau Jorba,39,3,0,,,,,,,,,
+Fer,39,2,0,,,,,,,,,
+Fran,39,4,0,,,,,,,,,
+JLABALOS,39,1,0,,,,,,,,,
+Crivi,39,3,1,,,,,,,,,
+Castillo,39,2,0,,,,,,,,,
+Dani,40,2,0,,,,,,,,,
+ruly,40,2,0,,,,,,,,,
+Arnau Jorba,40,2,1,,,,,,,,,
+Fer,40,3,0,,,,,,,,,
+Fran,40,3,0,,,,,,,,,
+JLABALOS,40,3,1,,,,,,,,,
+Crivi,40,4,0,,,,,,,,,
+Castillo,40,1,0,,,,,,,,,
+Dani,41,4,0,,,,,,,,,
+ruly,41,2,0,,,,,,,,,
+Arnau Jorba,41,3,0,,,,,,,,,
+Fer,41,3,0,,,,,,,,,
+Fran,41,4,0,,,,,,,,,
+JLABALOS,41,5,0,,,,,,,,,
+Crivi,41,5,1,,,,,,,,,
+Castillo,41,2,1,,,,,,,,,
+Dani,42,1,0,,,,,,,,,
+ruly,42,1,2,,,,,,,,,
+Arnau Jorba,42,2,2,,,,,,,,,
+Fer,42,2,2,,,,,,,,,
+Fran,42,1,1,,,,,,,,,
+JLABALOS,42,1,1,,,,,,,,,
+Crivi,42,1,2,,,,,,,,,
+Castillo,42,1,0,,,,,,,,,
+Dani,43,2,1,,,,,,,,,
+ruly,43,1,1,,,,,,,,,
+Arnau Jorba,43,2,0,,,,,,,,,
+Fer,43,3,1,,,,,,,,,
+Fran,43,1,0,,,,,,,,,
+JLABALOS,43,3,1,,,,,,,,,
+Crivi,43,2,1,,,,,,,,,
+Castillo,43,1,0,,,,,,,,,
+Dani,44,0,1,,,,,,,,,
+ruly,44,0,1,,,,,,,,,
+Arnau Jorba,44,0,2,,,,,,,,,
+Fer,44,1,2,,,,,,,,,
+Fran,44,0,1,,,,,,,,,
+JLABALOS,44,0,1,,,,,,,,,
+Crivi,44,1,2,,,,,,,,,
+Castillo,44,0,2,,,,,,,,,
+Dani,45,4,0,,,,,,,,,
+ruly,45,4,0,,,,,,,,,
+Arnau Jorba,45,2,0,,,,,,,,,
+Fer,45,3,0,,,,,,,,,
+Fran,45,4,0,,,,,,,,,
+JLABALOS,45,4,1,,,,,,,,,
+Crivi,45,4,0,,,,,,,,,
+Castillo,45,2,0,,,,,,,,,
+Dani,46,2,0,,,,,,,,,
+ruly,46,2,0,,,,,,,,,
+Arnau Jorba,46,2,0,,,,,,,,,
+Fer,46,2,1,,,,,,,,,
+Fran,46,3,1,,,,,,,,,
+JLABALOS,46,2,1,,,,,,,,,
+Crivi,46,3,0,,,,,,,,,
+Castillo,46,1,1,,,,,,,,,
+Dani,47,2,0,,,,,,,,,
+ruly,47,1,0,,,,,,,,,
+Arnau Jorba,47,2,1,,,,,,,,,
+Fer,47,2,1,,,,,,,,,
+Fran,47,1,0,,,,,,,,,
+JLABALOS,47,3,1,,,,,,,,,
+Crivi,47,2,1,,,,,,,,,
+Castillo,47,2,1,,,,,,,,,
+Dani,48,0,1,,,,,,,,,
+ruly,48,0,2,,,,,,,,,
+Arnau Jorba,48,0,2,,,,,,,,,
+Fer,48,0,2,,,,,,,,,
+Fran,48,0,2,,,,,,,,,
+JLABALOS,48,0,2,,,,,,,,,
+Crivi,48,0,1,,,,,,,,,
+Castillo,48,1,2,,,,,,,,,
+Dani,49,1,1,,,,,,,,,
+ruly,49,1,1,,,,,,,,,
+Arnau Jorba,49,1,1,,,,,,,,,
+Fer,49,1,3,,,,,,,,,
+Fran,49,1,2,,,,,,,,,
+JLABALOS,49,2,2,,,,,,,,,
+Crivi,49,0,0,,,,,,,,,
+Castillo,49,1,1,,,,,,,,,
+Dani,50,1,1,,,,,,,,,
+ruly,50,1,1,,,,,,,,,
+Arnau Jorba,50,1,2,,,,,,,,,
+Fer,50,0,3,,,,,,,,,
+Fran,50,1,1,,,,,,,,,
+JLABALOS,50,1,3,,,,,,,,,
+Crivi,50,1,1,,,,,,,,,
+Castillo,50,0,3,,,,,,,,,
+Dani,51,1,1,,,,,,,,,
+ruly,51,1,1,,,,,,,,,
+Arnau Jorba,51,1,1,,,,,,,,,
+Fer,51,2,0,,,,,,,,,
+Fran,51,2,1,,,,,,,,,
+JLABALOS,51,1,1,,,,,,,,,
+Crivi,51,2,0,,,,,,,,,
+Castillo,51,2,0,,,,,,,,,
+Dani,52,1,0,,,,,,,,,
+ruly,52,2,1,,,,,,,,,
+Arnau Jorba,52,1,0,,,,,,,,,
+Fer,52,1,1,,,,,,,,,
+Fran,52,3,1,,,,,,,,,
+JLABALOS,52,2,1,,,,,,,,,
+Crivi,52,1,1,,,,,,,,,
+Castillo,52,0,1,,,,,,,,,
+Dani,53,1,2,,,,,,,,,
+ruly,53,1,2,,,,,,,,,
+Arnau Jorba,53,0,2,,,,,,,,,
+Fer,53,1,3,,,,,,,,,
+Fran,53,1,3,,,,,,,,,
+JLABALOS,53,1,2,,,,,,,,,
+Crivi,53,1,3,,,,,,,,,
+Castillo,53,1,3,,,,,,,,,
+Dani,54,3,0,,,,,,,,,
+ruly,54,4,0,,,,,,,,,
+Arnau Jorba,54,2,0,,,,,,,,,
+Fer,54,3,0,,,,,,,,,
+Fran,54,3,0,,,,,,,,,
+JLABALOS,54,3,0,,,,,,,,,
+Crivi,54,4,1,,,,,,,,,
+Castillo,54,2,0,,,,,,,,,
+Dani,55,1,1,,,,,,,,,
+ruly,55,1,0,,,,,,,,,
+Arnau Jorba,55,1,1,,,,,,,,,
+Fer,55,3,1,,,,,,,,,
+Fran,55,2,1,,,,,,,,,
+JLABALOS,55,1,1,,,,,,,,,
+Crivi,55,1,0,,,,,,,,,
+Castillo,55,1,2,,,,,,,,,
+Dani,56,1,1,,,,,,,,,
+ruly,56,0,1,,,,,,,,,
+Arnau Jorba,56,2,1,,,,,,,,,
+Fer,56,2,1,,,,,,,,,
+Fran,56,2,1,,,,,,,,,
+JLABALOS,56,2,1,,,,,,,,,
+Crivi,56,1,0,,,,,,,,,
+Castillo,56,0,1,,,,,,,,,
+Dani,57,0,1,,,,,,,,,
+ruly,57,0,3,,,,,,,,,
+Arnau Jorba,57,1,2,,,,,,,,,
+Fer,57,0,3,,,,,,,,,
+Fran,57,0,2,,,,,,,,,
+JLABALOS,57,1,3,,,,,,,,,
+Crivi,57,1,4,,,,,,,,,
+Castillo,57,0,2,,,,,,,,,
+Dani,58,1,2,,,,,,,,,
+ruly,58,0,3,,,,,,,,,
+Arnau Jorba,58,2,2,,,,,,,,,
+Fer,58,0,2,,,,,,,,,
+Fran,58,1,2,,,,,,,,,
+JLABALOS,58,1,1,,,,,,,,,
+Crivi,58,1,1,,,,,,,,,
+Castillo,58,1,2,,,,,,,,,
+Dani,59,1,1,,,,,,,,,
+ruly,59,2,1,,,,,,,,,
+Arnau Jorba,59,1,1,,,,,,,,,
+Fer,59,2,2,,,,,,,,,
+Fran,59,2,0,,,,,,,,,
+JLABALOS,59,2,2,,,,,,,,,
+Crivi,59,1,1,,,,,,,,,
+Castillo,59,2,1,,,,,,,,,
+Dani,60,1,2,,,,,,,,,
+ruly,60,2,3,,,,,,,,,
+Arnau Jorba,60,0,1,,,,,,,,,
+Fer,60,0,3,,,,,,,,,
+Fran,60,0,2,,,,,,,,,
+JLABALOS,60,1,3,,,,,,,,,
+Crivi,60,1,2,,,,,,,,,
+Castillo,60,0,1,,,,,,,,,
+Dani,61,1,1,,,,,,,,,
+ruly,61,2,0,,,,,,,,,
+Arnau Jorba,61,1,1,,,,,,,,,
+Fer,61,2,2,,,,,,,,,
+Fran,61,2,2,,,,,,,,,
+JLABALOS,61,1,0,,,,,,,,,
+Crivi,61,1,1,,,,,,,,,
+Castillo,61,1,0,,,,,,,,,
+Dani,62,0,2,,,,,,,,,
+ruly,62,0,2,,,,,,,,,
+Arnau Jorba,62,0,2,,,,,,,,,
+Fer,62,1,3,,,,,,,,,
+Fran,62,0,3,,,,,,,,,
+JLABALOS,62,0,5,,,,,,,,,
+Crivi,62,0,3,,,,,,,,,
+Castillo,62,0,2,,,,,,,,,
+Dani,63,1,2,,,,,,,,,
+ruly,63,0,1,,,,,,,,,
+Arnau Jorba,63,1,1,,,,,,,,,
+Fer,63,0,1,,,,,,,,,
+Fran,63,0,1,,,,,,,,,
+JLABALOS,63,1,1,,,,,,,,,
+Crivi,63,1,3,,,,,,,,,
+Castillo,63,0,1,,,,,,,,,
+Dani,64,1,2,,,,,,,,,
+ruly,64,0,3,,,,,,,,,
+Arnau Jorba,64,1,2,,,,,,,,,
+Fer,64,1,3,,,,,,,,,
+Fran,64,1,2,,,,,,,,,
+JLABALOS,64,1,1,,,,,,,,,
+Crivi,64,1,2,,,,,,,,,
+Castillo,64,1,1,,,,,,,,,
+Dani,65,1,2,,,,,,,,,
+ruly,65,1,2,,,,,,,,,
+Arnau Jorba,65,1,2,,,,,,,,,
+Fer,65,1,3,,,,,,,,,
+Fran,65,0,3,,,,,,,,,
+JLABALOS,65,1,1,,,,,,,,,
+Crivi,65,2,3,,,,,,,,,
+Castillo,65,1,2,,,,,,,,,
+Dani,66,1,0,,,,,,,,,
+ruly,66,1,0,,,,,,,,,
+Arnau Jorba,66,2,0,,,,,,,,,
+Fer,66,2,0,,,,,,,,,
+Fran,66,1,0,,,,,,,,,
+JLABALOS,66,2,0,,,,,,,,,
+Crivi,66,3,0,,,,,,,,,
+Castillo,66,1,0,,,,,,,,,
+Dani,67,1,1,,,,,,,,,
+ruly,67,1,3,,,,,,,,,
+Arnau Jorba,67,1,1,,,,,,,,,
+Fer,67,0,1,,,,,,,,,
+Fran,67,1,3,,,,,,,,,
+JLABALOS,67,1,2,,,,,,,,,
+Crivi,67,0,1,,,,,,,,,
+Castillo,67,1,1,,,,,,,,,
+Dani,68,0,3,,,,,,,,,
+ruly,68,0,4,,,,,,,,,
+Arnau Jorba,68,0,3,,,,,,,,,
+Fer,68,0,3,,,,,,,,,
+Fran,68,0,4,,,,,,,,,
+JLABALOS,68,0,4,,,,,,,,,
+Crivi,68,0,4,,,,,,,,,
+Castillo,68,0,2,,,,,,,,,
+Dani,69,2,2,,,,,,,,,
+ruly,69,2,2,,,,,,,,,
+Arnau Jorba,69,2,2,,,,,,,,,
+Fer,69,1,2,,,,,,,,,
+Fran,69,1,2,,,,,,,,,
+JLABALOS,69,1,1,,,,,,,,,
+Crivi,69,1,1,,,,,,,,,
+Castillo,69,1,2,,,,,,,,,
+Dani,70,0,0,,,,,,,,,
+ruly,70,0,0,,,,,,,,,
+Arnau Jorba,70,0,0,,,,,,,,,
+Fer,70,2,1,,,,,,,,,
+Fran,70,2,1,,,,,,,,,
+JLABALOS,70,2,2,,,,,,,,,
+Crivi,70,1,2,,,,,,,,,
+Castillo,70,0,1,,,,,,,,,
+Dani,71,0,3,,,,,,,,,
+ruly,71,0,3,,,,,,,,,
+Arnau Jorba,71,0,2,,,,,,,,,
+Fer,71,0,2,,,,,,,,,
+Fran,71,0,3,,,,,,,,,
+JLABALOS,71,0,3,,,,,,,,,
+Crivi,71,0,3,,,,,,,,,
+Castillo,71,1,2,,,,,,,,,
+Dani,72,1,1,,,,,,,,,
+ruly,72,2,1,,,,,,,,,
+Arnau Jorba,72,1,1,,,,,,,,,
+Fer,72,1,1,,,,,,,,,
+Fran,72,1,1,,,,,,,,,
+JLABALOS,72,2,1,,,,,,,,,
+Crivi,72,1,1,,,,,,,,,
+Castillo,72,2,1,,,,,,,,,
+Dani,predicciones,,,Francia,Portugal,Brasil,,,,,,
+Dani,premios,,,,,,Mbappé,Kane,Vinicius,Mbappé,Vitinha,Lamine Yamal
+ruly,predicciones,,,España,Portugal,Países Bajos,,,,,,
+ruly,premios,,,,,,poyarzabal,mena lamine,gakpo,pedri,poyarzabal,lamine
+Arnau Jorba,predicciones,,,España,Argentina,Brasil,,,,,,
+Arnau Jorba,premios,,,,,,Donatello,Hurri Kane,Lautaro,Lamine,Messi,Pedri
+Fer,predicciones,,,España,Portugal,Brasil,,,,,,
+Fer,premios,,,,,,Dembele,Oyarzabal,Ferran Torres,Pedri,Vitinha,Raphina
+Fran,predicciones,,,España,Portugal,Francia,,,,,,
+Fran,premios,,,,,,Mbappe,Oyarzabal,Kane,Lamine Yamal,Mbappe,Pedri
+JLABALOS,predicciones,,,España,Argentina,Francia,,,,,,
+JLABALOS,premios,,,,,,Olise,Kane,Julian Alvarez,Lamine,Olise,Griezman
+Crivi,predicciones,,,Argentina,España,Francia,,,,,,
+Crivi,premios,,,,,,Mbappé,Raphinha,Lamine Yamal,Messi,Lamine Yamal,Pedri
+Castillo,predicciones,,,Portugal,Alemania,España,,,,,,
+Castillo,premios,,,,,,ferran torres,mbappe,haaland,vitinha,musiala,pedri
+_resultados,predicciones,,,,,,,,,,,
+_resultados,premios,,,,,,,,,,,
+`;
+// ══════════════════════════════════════════════
+
+// Estado global
+let state = {
+  partidos: [],     // [{id, fase, grupo, local, visitante, gL, gV, fecha, jugado}]
+  pronosticos: [],  // [{jugador, partido_id, gL, gV, campeon, sf1,sf2,sf3,sf4,qf...}]
+  players: [],
+  ready: false,
+};
+
+// ── UTILIDADES CSV ──
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim().replace(/\r/g, ''));
+  return lines.slice(1).map(line => {
+    const vals = line.split(',').map(v => v.trim().replace(/\r/g, ''));
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = vals[i] ?? '');
+    return obj;
+  });
+}
+
+async function fetchCSV(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return parseCSV(await res.text());
+}
+
+// ── PUNTUACIÓN ──
+// Lógica acumulativa:
+//   fallo         → 0
+//   signo ok      → signo pts
+//   signo + diff  → signo + diff pts
+//   resultado exacto → signo + diff + exacto pts  (máximo)
+// Si el partido tiene bonus=2, se multiplica el total x2
+function calcPoints(pronL, pronV, realL, realV, fase, bonus) {
+  if (realL === '' || realV === '') return { pts: 0, tipo: 'pending', detalle: '' };
+  const rl = parseInt(realL), rv = parseInt(realV);
+  const pl = parseInt(pronL), pv = parseInt(pronV);
+  if (isNaN(rl) || isNaN(rv) || isNaN(pl) || isNaN(pv)) return { pts: 0, tipo: 'pending', detalle: '' };
+
+  const phasePts = CONFIG.PTS[fase] ?? CONFIG.PTS['Final'];
+  const mult = (parseInt(bonus) === 2) ? 2 : 1;
+  const signoPron = pl > pv ? 1 : pl < pv ? -1 : 0;
+  const signoReal = rl > rv ? 1 : rl < rv ? -1 : 0;
+
+  if (signoPron !== signoReal) return { pts: 0, tipo: 'miss', detalle: 'fallo' };
+
+  let pts = phasePts.signo;
+  let tipo = 'sign';
+  let detalle = `signo +${phasePts.signo}`;
+
+  const diffPron = pl - pv;
+  const diffReal = rl - rv;
+  if (diffPron === diffReal) {
+    pts += phasePts.diff;
+    detalle += ` · diff +${phasePts.diff}`;
+  }
+
+  if (pl === rl && pv === rv) {
+    pts += phasePts.exacto;
+    tipo = 'exact';
+    detalle += ` · exacto +${phasePts.exacto}`;
+  }
+
+  if (mult === 2) {
+    pts *= 2;
+    detalle += ' ×2🔥';
+  }
+
+  return { pts, tipo, detalle };
+}
+
+function getSign(l, v) {
+  const il = parseInt(l), iv = parseInt(v);
+  if (isNaN(il) || isNaN(iv)) return '?';
+  return il > iv ? '1' : il < iv ? '2' : 'X';
+}
+
+// ── CARGA DE DATOS ──
+// Los pronósticos van embebidos en el HTML.
+// Los resultados se cargan desde resultados.json (edítalo en GitHub para actualizar).
+async function loadData() {
+  try {
+    const partidos = parseCSV(DATOS_PARTIDOS_CSV);
+    const pronosticos = parseCSV(DATOS_PRONOSTICOS_CSV);
+    state.players = [...new Set(
+      pronosticos.filter(p => p.jugador && p.jugador !== '_resultados').map(p => p.jugador)
+    )];
+    state.pronosticos = pronosticos;
+
+    // Cargar resultados desde resultados.json (se puede editar directamente en GitHub)
+    let resultados = {};
+    try {
+      const res = await fetch('resultados.json?v=' + Date.now());
+      if (res.ok) resultados = await res.json();
+    } catch(e) {
+      console.warn('No se pudo cargar resultados.json, usando datos del HTML', e);
+    }
+
+    // Aplicar resultados a los partidos
+    partidos.forEach(p => {
+      if (resultados[p.id]) {
+        p.gL = resultados[p.id].gL ?? p.gL;
+        p.gV = resultados[p.id].gV ?? p.gV;
+      }
+    });
+    state.partidos = partidos;
+
+    // Predicciones finales y premios reales
+    const resReal = {};
+    if (resultados['_predicciones']) Object.assign(resReal, resultados['_predicciones']);
+    if (resultados['_premios']) Object.assign(resReal, resultados['_premios']);
+    state.predicciones_reales = resReal;
+    state.ready = true;
+
+    updateHero();
+    renderRanking();
+    renderUpcoming();
+    renderMatches();
+    populatePlayerSelector();
+    renderChampion();
+    renderAwards();
+
+    const now = new Date();
+    document.getElementById('last-updated').textContent =
+      `Actualizado ${now.toLocaleDateString('es-ES')} ${now.toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'})}`;
+  } catch(e) {
+    showError(e.message);
+  }
+}
+
+function showConfigNotice() {
+  const notice = `
+    <div class="config-notice">
+      <strong>⚙️ Configura tu Google Sheet</strong>
+      Edita el archivo <code>index.html</code> y rellena los valores de <code>CONFIG</code> con las URLs de tus hojas CSV.
+      Más instrucciones en el archivo <code>README.md</code>.
+    </div>
+    <div class="loading">Vista previa con datos de ejemplo activada</div>`;
+
+  // Carga demo con datos de ejemplo
+  loadDemoData();
+}
+
+function showError(msg) {
+  const html = `<div class="error-msg">❌ Error cargando datos: <strong>${msg}</strong><br>Revisa que las URLs del Google Sheet estén correctas y el documento esté publicado como CSV.</div>`;
+  document.getElementById('ranking-content').innerHTML = html;
+  document.getElementById('matches-content').innerHTML = html;
+  document.getElementById('champion-content').innerHTML = html;
+}
+
+// ── HERO ──
+function updateHero() {
+  const jugados = state.partidos.filter(p => p.gL !== '' && p.gV !== '').length;
+  document.getElementById('hero-players').textContent = state.players.length;
+  document.getElementById('hero-matches').textContent = jugados;
+
+  const ranking = buildRanking();
+  if (ranking.length) document.getElementById('hero-leader').textContent = ranking[0].nombre;
+}
+
+// ── RANKING ──
+function buildRanking() {
+  return state.players.map(jugador => {
+    const picks = state.pronosticos.filter(p => p.jugador === jugador);
+    let pts = 0, exactos = 0, signos = 0, fallos = 0, jugados = 0;
+
+    state.partidos.forEach(partido => {
+      const pick = picks.find(p => p.partido_id === partido.id);
+      if (!pick) return;
+      const { pts: p, tipo } = calcPoints(pick.gL, pick.gV, partido.gL, partido.gV, partido.fase, partido.bonus);
+      if (tipo !== 'pending') {
+        pts += p; jugados++;
+        if (tipo === 'exact') exactos++;
+        else if (tipo === 'sign') signos++;
+        else fallos++;
+      }
+    });
+
+    // Predicciones finales
+    const pred = picks.find(p => p.partido_id === 'predicciones') ?? {};
+    const resultados = state.predicciones_reales ?? {};
+    if (resultados.campeon    && pred.campeon    === resultados.campeon)    pts += CONFIG.PTS_CAMPEON;
+    if (resultados.subcampeon && pred.subcampeon === resultados.subcampeon) pts += CONFIG.PTS_SUBCAMPEON;
+    if (resultados.tercero    && pred.tercero    === resultados.tercero)    pts += CONFIG.PTS_TERCERO;
+
+    // Premios individuales
+    if (resultados.bota_oro    && pred.bota_oro    === resultados.bota_oro)    pts += CONFIG.PTS_BOTA_ORO;
+    if (resultados.bota_plata  && pred.bota_plata  === resultados.bota_plata)  pts += CONFIG.PTS_BOTA_PLATA;
+    if (resultados.bota_bronce && pred.bota_bronce === resultados.bota_bronce) pts += CONFIG.PTS_BOTA_BRONCE;
+    if (resultados.balon_oro   && pred.balon_oro   === resultados.balon_oro)   pts += CONFIG.PTS_BALON_ORO;
+    if (resultados.balon_plata && pred.balon_plata === resultados.balon_plata) pts += CONFIG.PTS_BALON_PLATA;
+    if (resultados.balon_bronce&& pred.balon_bronce=== resultados.balon_bronce)pts += CONFIG.PTS_BALON_BRONCE;
+
+    return { nombre: jugador, pts, exactos, signos, fallos, jugados };
+  }).sort((a, b) => b.pts - a.pts || b.exactos - a.exactos);
+}
+
+function renderRanking() {
+  const ranking = buildRanking();
+  if (!ranking.length) {
+    document.getElementById('ranking-content').innerHTML = '<div class="loading">No hay datos de participantes.</div>';
+    return;
+  }
+
+  const posClass = (i) => i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+  const posIcon  = (i) => i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+
+  let html = `<table class="ranking-table">
+    <thead><tr>
+      <th style="width:2.5rem">#</th>
+      <th>Participante</th>
+      <th class="sub-stat" style="text-align:center">Exactos</th>
+      <th class="sub-stat" style="text-align:center">Signo</th>
+      <th class="sub-stat" style="text-align:center">Fallos</th>
+      <th style="text-align:right">Puntos</th>
+    </tr></thead><tbody>`;
+
+  ranking.forEach((r, i) => {
+    html += `<tr>
+      <td class="pos ${posClass(i)}">${posIcon(i) || (i+1)}</td>
+      <td class="player-name">${r.nombre}<br><span class="sub-stat">${r.jugados} partidos</span></td>
+      <td style="text-align:center"><span class="badge badge-exact">${r.exactos}</span></td>
+      <td style="text-align:center"><span class="badge badge-sign">${r.signos}</span></td>
+      <td style="text-align:center"><span class="badge badge-miss">${r.fallos}</span></td>
+      <td class="pts">${r.pts}</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  document.getElementById('ranking-content').innerHTML = html;
+}
+
+// ── PRÓXIMOS PARTIDOS ──
+function renderUpcoming() {
+  const pending = state.partidos
+    .filter(p => p.gL === '' && p.gV === '')
+    .slice(0, 5);
+
+  if (!pending.length) {
+    document.getElementById('upcoming-content').innerHTML =
+      '<div class="loading">No hay partidos pendientes.</div>';
+    return;
+  }
+
+  let html = '';
+
+  pending.forEach(p => {
+    const esBonus = parseInt(p.bonus) === 2;
+    const bonusTag = esBonus
+      ? '<span style="font-size:0.8rem;font-weight:900;background:#3a2200;color:var(--gold);border:1px solid var(--gold);border-radius:4px;padding:0.15rem 0.45rem;margin-left:0.5rem">×2🔥</span>'
+      : '';
+
+    // Cabecera del partido
+    html += `<div style="margin-bottom:1.5rem">
+      <div style="background:var(--card);border:${esBonus?'2px solid var(--gold)':'1px solid var(--border)'};border-radius:var(--radius);overflow:hidden">
+        <!-- Partido header -->
+        <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:0.5rem;padding:0.85rem 1rem;border-bottom:1px solid var(--border)">
+          <div class="team home">${p.local}</div>
+          <div class="score-box">
+            <div class="score pending" style="font-size:1.1rem">vs</div>
+            <div class="match-meta">${p.fecha ?? ''} ${bonusTag}</div>
+          </div>
+          <div class="team away">${p.visitante}</div>
+        </div>`;
+
+    // Pronósticos de cada participante
+    const picks = state.pronosticos.filter(pr => pr.partido_id === p.id && pr.jugador !== '_resultados');
+
+    if (picks.length) {
+      html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:0">`;
+      picks.forEach((pick, idx) => {
+        const borderRight = '1px solid var(--border)';
+        const borderBottom = '1px solid var(--border)';
+        const signo = parseInt(pick.gL) > parseInt(pick.gV) ? '1'
+                    : parseInt(pick.gL) < parseInt(pick.gV) ? '2' : 'X';
+        const signoColor = signo === '1' ? '#4a9' : signo === '2' ? '#e85' : '#99b';
+
+        html += `<div style="padding:0.6rem 0.75rem;border-right:${borderRight};border-bottom:${borderBottom};text-align:center">
+          <div style="font-size:0.7rem;color:var(--muted);font-weight:600;margin-bottom:0.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${pick.jugador}</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--white);line-height:1">${pick.gL}–${pick.gV}</div>
+          <div style="font-size:0.65rem;font-weight:700;color:${signoColor};margin-top:0.1rem">${signo}</div>
+        </div>`;
+      });
+      html += `</div>`;
+    } else {
+      html += `<div style="padding:0.75rem;font-size:0.8rem;color:var(--muted);text-align:center">Sin pronósticos</div>`;
+    }
+
+    html += `</div></div>`;
+  });
+
+  document.getElementById('upcoming-content').innerHTML = html;
+}
+
+// ── PARTIDOS ──
+function renderMatches() {
+  const fases = [...new Set(state.partidos.map(p => p.fase))];
+  let html = '';
+
+  fases.forEach(fase => {
+    const partidos = state.partidos.filter(p => p.fase === fase);
+    html += `<div class="match-group">
+      <div class="section-label">${fase}</div>`;
+
+    partidos.forEach(p => {
+      const jugado = p.gL !== '' && p.gV !== '';
+      const scoreHtml = jugado
+        ? `<div class="score">${p.gL} – ${p.gV}</div>`
+        : `<div class="score pending">vs</div>`;
+      const esBonus = parseInt(p.bonus) === 2;
+      const bonusTag = esBonus
+        ? '<span style="display:inline-block;margin-left:0.4rem;font-size:0.85rem;font-weight:900;background:#3a2200;color:var(--gold);border:1px solid var(--gold);border-radius:4px;padding:0.15rem 0.5rem;letter-spacing:0.06em;vertical-align:middle">×2🔥</span>'
+        : '';
+
+      html += `<div class="match-card" style="${esBonus?'border-color:var(--gold);border-width:2px;':''}" >
+        <div class="team home">${p.local}</div>
+        <div class="score-box">
+          ${scoreHtml}
+          <div class="match-meta">${p.fecha ?? ''} ${bonusTag}</div>
+        </div>
+        <div class="team away">${p.visitante}</div>
+      </div>`;
+    });
+
+    html += '</div>';
+  });
+
+  document.getElementById('matches-content').innerHTML = html || '<div class="loading">No hay partidos cargados.</div>';
+}
+
+// ── PRONÓSTICOS ──
+function populatePlayerSelector() {
+  const sel = document.getElementById('player-selector');
+  sel.innerHTML = '<option value="">— Selecciona un participante —</option>';
+  state.players.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p; opt.textContent = p;
+    sel.appendChild(opt);
+  });
+}
+
+function renderPicks() {
+  const jugador = document.getElementById('player-selector').value;
+  const container = document.getElementById('picks-content');
+  if (!jugador) { container.innerHTML = ''; return; }
+
+  const picks = state.pronosticos.filter(p => p.jugador === jugador);
+  const fases = [...new Set(state.partidos.map(p => p.fase))];
+  let html = '';
+
+  fases.forEach(fase => {
+    const partidos = state.partidos.filter(p => p.fase === fase);
+    html += `<div class="match-group">
+      <div class="section-label">${fase}</div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius)">`;
+
+    partidos.forEach(p => {
+      const pick = picks.find(pk => pk.partido_id === p.id);
+      const pronL = pick?.gL ?? '?';
+      const pronV = pick?.gV ?? '?';
+      const { pts, tipo, detalle } = pick
+        ? calcPoints(pronL, pronV, p.gL, p.gV, p.fase, p.bonus)
+        : { pts: 0, tipo: 'pending', detalle: '' };
+
+      const resultHtml = p.gL !== '' && p.gV !== ''
+        ? `<span class="pick-result pick-${tipo}" title="${detalle}">${pronL}–${pronV} · ${pts}pts</span>`
+        : `<span class="pick-result pick-pending">${pronL}–${pronV}</span>`;
+
+      const bonusPick = parseInt(p.bonus) === 2
+        ? ' <span style="font-size:0.75rem;font-weight:800;color:var(--gold);letter-spacing:0.04em">×2</span>'
+        : '';
+      html += `<div class="pick-row" style="${parseInt(p.bonus)===2?'border-left:3px solid var(--gold);padding-left:0.6rem;':''}" >
+        <span>${p.local} <b>vs</b> ${p.visitante}${bonusPick}</span>
+        ${resultHtml}
+      </div>`;
+    });
+
+    html += '</div></div>';
+  });
+
+  container.innerHTML = html || '<div class="loading">Sin pronósticos.</div>';
+}
+
+// ── PREDICCIONES FINALES ──
+function renderChampion() {
+  const r = state.predicciones_reales ?? {};
+
+  const predDefs = [
+    { key: 'campeon',    label: '🏆 Campeón',     pts: CONFIG.PTS_CAMPEON },
+    { key: 'subcampeon', label: '🥈 Subcampeón',   pts: CONFIG.PTS_SUBCAMPEON },
+    { key: 'tercero',    label: '🥉 3.er puesto',  pts: CONFIG.PTS_TERCERO },
+  ];
+
+  let html = '';
+
+  predDefs.forEach(def => {
+    const real = r[def.key] ?? '';
+    html += `<div style="margin-bottom:1.5rem">
+      <div class="section-label">${def.label} · ${def.pts} pts</div>`;
+    if (real) {
+      html += `<div style="margin-bottom:0.75rem;padding:0.6rem 1rem;background:var(--card);border:2px solid var(--gold);border-radius:var(--radius);font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--gold)">
+        ${real}
+      </div>`;
+    } else {
+      html += `<div style="margin-bottom:0.75rem;font-size:0.8rem;color:var(--muted)">Pendiente de resultado</div>`;
+    }
+    html += '<div class="champion-grid">';
+    state.players.forEach(jugador => {
+      const pick = state.pronosticos.find(p => p.jugador === jugador && p.partido_id === 'predicciones');
+      const eleccion = pick?.[def.key] ?? '—';
+      const hit = real && eleccion === real;
+      html += `<div class="champion-card ${hit ? 'hit' : ''}">
+        <div class="champ-name">${jugador}</div>
+        <div class="champ-pick">Pronóstico: <strong>${eleccion}</strong>${hit ? ` ✓ +${def.pts}pts` : ''}</div>
+      </div>`;
+    });
+    html += '</div></div>';
+  });
+
+  document.getElementById('champion-content').innerHTML = html;
+}
+
+// ── PREMIOS INDIVIDUALES ──
+function renderAwards() {
+  const r = state.predicciones_reales ?? {};
+
+  const awardDefs = [
+    { key: 'bota_oro',     label: '⚽ Bota de Oro',     pts: CONFIG.PTS_BOTA_ORO },
+    { key: 'bota_plata',   label: '⚽ Bota de Plata',   pts: CONFIG.PTS_BOTA_PLATA },
+    { key: 'bota_bronce',  label: '⚽ Bota de Bronce',  pts: CONFIG.PTS_BOTA_BRONCE },
+    { key: 'balon_oro',    label: '🌟 Balón de Oro',    pts: CONFIG.PTS_BALON_ORO },
+    { key: 'balon_plata',  label: '🌟 Balón de Plata',  pts: CONFIG.PTS_BALON_PLATA },
+    { key: 'balon_bronce', label: '🌟 Balón de Bronce', pts: CONFIG.PTS_BALON_BRONCE },
+  ];
+
+  let html = '';
+
+  awardDefs.forEach(def => {
+    const real = r[def.key] ?? '';
+    html += `<div style="margin-bottom:1.5rem">
+      <div class="section-label">${def.label} · ${def.pts} pts</div>`;
+    if (real) {
+      html += `<div style="margin-bottom:0.75rem;padding:0.6rem 1rem;background:var(--card);border:2px solid var(--gold);border-radius:var(--radius);font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--gold)">
+        ${real}
+      </div>`;
+    } else {
+      html += `<div style="margin-bottom:0.75rem;font-size:0.8rem;color:var(--muted)">Pendiente de resultado</div>`;
+    }
+    html += '<div class="champion-grid">';
+    state.players.forEach(jugador => {
+      const pick = state.pronosticos.find(p => p.jugador === jugador && p.partido_id === 'premios');
+      const eleccion = pick?.[def.key] ?? '—';
+      const hit = real && eleccion === real;
+      html += `<div class="champion-card ${hit ? 'hit' : ''}">
+        <div class="champ-name">${jugador}</div>
+        <div class="champ-pick">Pronóstico: <strong>${eleccion}</strong>${hit ? ` ✓ +${def.pts}pts` : ''}</div>
+      </div>`;
+    });
+    html += '</div></div>';
+  });
+
+  document.getElementById('awards-content').innerHTML = html;
+}
+
+// ── TABS ──
+function switchTab(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── DEMO DATA (cuando no hay Sheet configurado) ──
+function loadDemoData() {
+  state.partidos = [
+    {id:'1', fase:'Fase de grupos', grupo:'A', local:'España',    visitante:'Marruecos',    gL:'3', gV:'1', fecha:'12 Jun'},
+    {id:'2', fase:'Fase de grupos', grupo:'A', local:'Brasil',    visitante:'Argentina',    gL:'1', gV:'2', fecha:'12 Jun'},
+    {id:'3', fase:'Fase de grupos', grupo:'B', local:'Francia',   visitante:'Alemania',     gL:'',  gV:'',  fecha:'13 Jun'},
+    {id:'4', fase:'Fase de grupos', grupo:'B', local:'Portugal',  visitante:'Inglaterra',   gL:'',  gV:'',  fecha:'13 Jun'},
+    {id:'5', fase:'Octavos',        grupo:'',  local:'España',    visitante:'Brasil',       gL:'',  gV:'',  fecha:'30 Jun'},
+    {id:'6', fase:'Cuartos',        grupo:'',  local:'—',         visitante:'—',            gL:'',  gV:'',  fecha:'5 Jul'},
+    {id:'7', fase:'Semifinal',      grupo:'',  local:'—',         visitante:'—',            gL:'',  gV:'',  fecha:'9 Jul'},
+    {id:'8', fase:'Final',          grupo:'',  local:'—',         visitante:'—',            gL:'',  gV:'',  fecha:'13 Jul', campeon:''},
+  ];
+  state.pronosticos = [
+    {jugador:'Fran',  partido_id:'1', gL:'3', gV:'1'},
+    {jugador:'Fran',  partido_id:'2', gL:'2', gV:'1'},
+    {jugador:'Fran',  partido_id:'3', gL:'1', gV:'0'},
+    {jugador:'Fran',  partido_id:'predicciones', campeon:'España', subcampeon:'Francia', tercero:'Brasil'},
+    {jugador:'Fran',  partido_id:'premios', bota_oro:'Mbappé', bota_plata:'Vinicius', bota_bronce:'Lewandowski', balon_oro:'Mbappé', balon_plata:'Pedri', balon_bronce:'Bellingham'},
+    {jugador:'Dani',  partido_id:'1', gL:'1', gV:'0'},
+    {jugador:'Dani',  partido_id:'2', gL:'1', gV:'2'},
+    {jugador:'Dani',  partido_id:'3', gL:'2', gV:'2'},
+    {jugador:'Dani',  partido_id:'predicciones', campeon:'Brasil', subcampeon:'Argentina', tercero:'Francia'},
+    {jugador:'Dani',  partido_id:'premios', bota_oro:'Vinicius', bota_plata:'Mbappé', bota_bronce:'Salah', balon_oro:'Vinicius', balon_plata:'Mbappé', balon_bronce:'De Bruyne'},
+    {jugador:'Marta', partido_id:'1', gL:'2', gV:'0'},
+    {jugador:'Marta', partido_id:'2', gL:'0', gV:'1'},
+    {jugador:'Marta', partido_id:'3', gL:'1', gV:'1'},
+    {jugador:'Marta', partido_id:'predicciones', campeon:'Francia', subcampeon:'Portugal', tercero:'España'},
+    {jugador:'Marta', partido_id:'premios', bota_oro:'Mbappé', bota_plata:'Ronaldo', bota_bronce:'Vinicius', balon_oro:'Mbappé', balon_plata:'Ronaldo', balon_bronce:'Pedri'},
+    {jugador:'Pau',   partido_id:'1', gL:'3', gV:'1'},
+    {jugador:'Pau',   partido_id:'2', gL:'3', gV:'3'},
+    {jugador:'Pau',   partido_id:'3', gL:'0', gV:'2'},
+    {jugador:'Pau',   partido_id:'predicciones', campeon:'España', subcampeon:'Brasil', tercero:'Argentina'},
+    {jugador:'Pau',   partido_id:'premios', bota_oro:'Morata', bota_plata:'Mbappé', bota_bronce:'Vinicius', balon_oro:'Pedri', balon_plata:'Mbappé', balon_bronce:'Vinicius'},
+    // Fila de resultados reales (se rellena al acabar el torneo)
+    {jugador:'_resultados', partido_id:'predicciones', campeon:'', subcampeon:'', tercero:''},
+    {jugador:'_resultados', partido_id:'premios', bota_oro:'', bota_plata:'', bota_bronce:'', balon_oro:'', balon_plata:'', balon_bronce:''},
+  ];
+  state.players = ['Fran','Dani','Marta','Pau'];
+  state.predicciones_reales = {}; // vacío hasta que acabe el torneo
+  state.ready = true;
+
+  // Muestra aviso de demo
+  document.getElementById('ranking-content').innerHTML = `
+    <div class="config-notice" style="margin-bottom:1.25rem">
+      <strong>📋 Datos de ejemplo activos</strong>
+      Edita la sección <code>CONFIG</code> del HTML con tus URLs de Google Sheets para ver tus datos reales.
+      Lee el <code>README.md</code> para instrucciones paso a paso.
+    </div>` + '<div id="ranking-table-inner"></div>';
+
+  updateHero();
+
+  // Renderiza ranking dentro del container existente
+  const ranking = buildRanking();
+  const posClass = (i) => i===0?'gold':i===1?'silver':i===2?'bronze':'';
+  const posIcon  = (i) => i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+  let tbl = `<table class="ranking-table"><thead><tr>
+    <th style="width:2.5rem">#</th><th>Participante</th>
+    <th class="sub-stat" style="text-align:center">Exactos</th>
+    <th class="sub-stat" style="text-align:center">Signo</th>
+    <th class="sub-stat" style="text-align:center">Fallos</th>
+    <th style="text-align:right">Puntos</th>
+  </tr></thead><tbody>`;
+  ranking.forEach((r,i) => {
+    tbl += `<tr>
+      <td class="pos ${posClass(i)}">${posIcon(i)||(i+1)}</td>
+      <td class="player-name">${r.nombre}<br><span class="sub-stat">${r.jugados} partidos</span></td>
+      <td style="text-align:center"><span class="badge badge-exact">${r.exactos}</span></td>
+      <td style="text-align:center"><span class="badge badge-sign">${r.signos}</span></td>
+      <td style="text-align:center"><span class="badge badge-miss">${r.fallos}</span></td>
+      <td class="pts">${r.pts}</td>
+    </tr>`;
+  });
+  tbl += '</tbody></table>';
+  document.getElementById('ranking-content').innerHTML =
+    document.getElementById('ranking-content').innerHTML.replace('<div id="ranking-table-inner"></div>', tbl);
+
+  renderMatches();
+  populatePlayerSelector();
+  renderChampion();
+  renderAwards();
+  document.getElementById('last-updated').textContent = 'Modo demo';
+}
+
+// ── INIT ──
+loadData();
+</script>
+</body>
+</html>
