@@ -2195,32 +2195,86 @@ function normEquipo(s) {
   return (s || '').trim().toLowerCase();
 }
 
+// Determina quién gana un cruce de eliminatoria, considerando que en
+// fútbol de eliminación directa un EMPATE no es un resultado final: hay
+// que ir a la prórroga y, si sigue empatado, a los penaltis. El marcador
+// (gL/gV) siempre refleja el resultado del partido (90/120 min), tal cual
+// se jugó; si terminó en empate, el campo opcional "penaltis" en
+// resultados.json indica quién pasó de ronda en la tanda:
+//   { "match":"R16-1", "gL":"1", "gV":"1", "penaltis":"local" }   // o "visitante"
+// Sin ese campo, un empate se trata como "todavía sin resultado de quién
+// avanza" (igual que antes de esta función existir).
+// Devuelve 'local' | 'visitante' | null.
+function resolverGanadorPartido(real) {
+  if (!real || real.gL === '' || real.gV === '' || real.gL == null || real.gV == null) return null;
+  const gL = parseInt(real.gL), gV = parseInt(real.gV);
+  if (isNaN(gL) || isNaN(gV)) return null;
+  if (gL > gV) return 'local';
+  if (gV > gL) return 'visitante';
+  // Empate: solo se puede determinar el ganador si resultados.json indica
+  // explícitamente quién pasó por penaltis.
+  if (real.penaltis === 'local' || real.penaltis === 'visitante') return real.penaltis;
+  return null;
+}
+
 // Dado el pronóstico de un cruce (equipoA/equipoB/gL/gV) y el partido real
 // fijado (local/visitante/gL/gV), calcula los puntos de signo/diff/exacto.
 // Solo se otorgan si el jugador acertó CUÁLES eran los dos equipos del cruce
 // (en cualquier orden); si invirtió local/visitante, se reordena antes de comparar.
-function calcPlayoffMatchPoints(pronostico, real, faseKey) {
+// Calcula los puntos de "resultado" (signo/diferencia/exacto) de UN cruce
+// real de eliminatoria. A diferencia de antes, NO exige que el cruce esté
+// pronosticado justo en el slot correspondiente: si el jugador escribió en
+// CUALQUIER otro slot de esa misma ronda el mismo emparejamiento exacto
+// (mismos 2 equipos, en cualquier orden), ese marcador también cuenta —
+// solo importa que haya acertado quién jugaba y qué resultado tuvo, no en
+// qué cajón del cuadro lo escribiera. Si el jugador repitió el mismo
+// cruce en más de un slot con marcadores distintos, se usa el que dé más
+// puntos (el más favorable).
+//
+// todosPronosticosRonda: array con TODOS los pronósticos de eliminatoria
+// del jugador para la ronda en la que vive `real` (p.ej. los 16 de
+// dieciseisavos) — necesario para poder buscar el cruce fuera del slot
+// que se está evaluando. Si no se pasa, solo compara contra `pronostico`
+// (comportamiento exacto, usado como fallback).
+function calcPlayoffMatchPoints(pronostico, real, faseKey, todosPronosticosRonda) {
   if (!real || real.gL === '' || real.gV === '' || real.gL == null || real.gV == null) {
     return { pts: 0, tipo: 'pending' };
   }
-  if (!pronostico || !pronostico.equipoA || !pronostico.equipoB) {
-    return { pts: 0, tipo: 'sin_pronostico' };
-  }
-  const realL = normEquipo(real.local), realV = normEquipo(real.visitante);
-  const pronA = normEquipo(pronostico.equipoA), pronB = normEquipo(pronostico.equipoB);
-
-  let pronL, pronV, mismoCruce = false;
-  if (pronA === realL && pronB === realV) {
-    pronL = pronostico.gL; pronV = pronostico.gV; mismoCruce = true;
-  } else if (pronA === realV && pronB === realL) {
-    pronL = pronostico.gV; pronV = pronostico.gL; mismoCruce = true;
-  }
-
-  if (!mismoCruce) return { pts: 0, tipo: 'cruce_fallado' };
-  if (pronL === '' || pronV === '') return { pts: 0, tipo: 'sin_resultado' };
   if (!CONFIG.PTS[faseKey]) return { pts: 0, tipo: 'sin_config' };
 
-  return calcPoints(pronL, pronV, real.gL, real.gV, faseKey, 1);
+  const realL = normEquipo(real.local), realV = normEquipo(real.visitante);
+
+  // Candidatos a evaluar: el pronóstico del slot actual, más (si se pasó
+  // la lista completa) cualquier otro pronóstico de esa ronda con el mismo
+  // emparejamiento exacto.
+  const candidatos = [];
+  if (pronostico) candidatos.push(pronostico);
+  if (todosPronosticosRonda) {
+    todosPronosticosRonda.forEach(p => {
+      if (p !== pronostico) candidatos.push(p);
+    });
+  }
+
+  let mejor = { pts: 0, tipo: 'cruce_fallado' };
+  let encontrado = false;
+  candidatos.forEach(cand => {
+    if (!cand || !cand.equipoA || !cand.equipoB) return;
+    const pronA = normEquipo(cand.equipoA), pronB = normEquipo(cand.equipoB);
+    let pronL, pronV, mismoCruce = false;
+    if (pronA === realL && pronB === realV) {
+      pronL = cand.gL; pronV = cand.gV; mismoCruce = true;
+    } else if (pronA === realV && pronB === realL) {
+      pronL = cand.gV; pronV = cand.gL; mismoCruce = true;
+    }
+    if (!mismoCruce) return;
+    encontrado = true;
+    if (pronL === '' || pronV === '') return;
+    const resultado = calcPoints(pronL, pronV, real.gL, real.gV, faseKey, 1);
+    if (resultado.pts > mejor.pts) mejor = resultado;
+  });
+
+  if (!encontrado) return { pts: 0, tipo: pronostico ? 'cruce_fallado' : 'sin_pronostico' };
+  return mejor.pts > 0 ? mejor : { pts: 0, tipo: 'sin_resultado' };
 }
 
 // Equipo que el jugador pronosticó que ganaría un cruce (para puntos de "clasificado")
@@ -2241,11 +2295,10 @@ function getEquipoClasificadoPronosticado(picks, matchId) {
 function getEquipoClasificadoReal(matchId) {
   const real = getPlayoffPartidoResuelto(matchId);
   if (real && real.gL !== '' && real.gV !== '') {
-    const gL = parseInt(real.gL), gV = parseInt(real.gV);
-    if (!isNaN(gL) && !isNaN(gV) && gL !== gV) {
-      return gL > gV ? real.local : real.visitante;
-    }
-    return null; // empate sin desempate
+    const lado = resolverGanadorPartido(real);
+    if (lado === 'local') return real.local;
+    if (lado === 'visitante') return real.visitante;
+    return null; // empate sin desempate registrado (ni gol de oro ni penaltis)
   }
   // Sin resultado real: usar la elección manual del cuadro de Play Off, si existe
   const side = playoffWinners[matchId];
@@ -2265,9 +2318,10 @@ function getEquipoClasificadoReal(matchId) {
 function getEquipoClasificadoRealEstricto(matchId) {
   const real = getPlayoffPartidoResuelto(matchId);
   if (!real || real.gL === '' || real.gV === '') return null;
-  const gL = parseInt(real.gL), gV = parseInt(real.gV);
-  if (isNaN(gL) || isNaN(gV) || gL === gV) return null;
-  return gL > gV ? real.local : real.visitante;
+  const lado = resolverGanadorPartido(real);
+  if (lado === 'local') return real.local;
+  if (lado === 'visitante') return real.visitante;
+  return null;
 }
 
 function calcPlayoffPointsForPlayer(jugador) {
@@ -2299,13 +2353,14 @@ function calcPlayoffPointsForPlayer(jugador) {
   // cruce) — esto sí se queda en la ronda a la que pertenece el partido.
   RONDAS_ELIMINATORIA.forEach(ronda => {
     let ptsResultadoRonda = 0;
+    const pronosRonda = picks.filter(p => ronda.matchIds.includes(p.partido_id));
     ronda.matchIds.forEach(matchId => {
       const pronostico = picks.find(p => p.partido_id === matchId);
       // getPlayoffPartidoResuelto: aunque resultados.json deje local/visitante
       // vacíos (caso normal), aquí necesitamos el nombre real del equipo para
       // poder comparar el cruce pronosticado — si no, nunca coincidiría.
       const real = getPlayoffPartidoResuelto(matchId);
-      const { pts: ptsResultado } = calcPlayoffMatchPoints(pronostico, real, ronda.faseKey);
+      const { pts: ptsResultado } = calcPlayoffMatchPoints(pronostico, real, ronda.faseKey, pronosRonda);
       ptsResultadoRonda += ptsResultado;
     });
     desglose[ronda.key].resultado = ptsResultadoRonda;
@@ -2878,14 +2933,18 @@ function showDetalle(jugador, concepto) {
       const ronda = RONDAS_ELIMINATORIA.find(r => r.key === concepto2);
       const matchIds = ronda ? ronda.matchIds : (concepto2 === 'tercerPuesto' ? ['tercer-1'] : []);
       const faseKey = ronda ? ronda.faseKey : '3er puesto';
+      const pronosRonda = ronda ? picks.filter(p => matchIds.includes(p.partido_id)) : null;
       matchIds.forEach(matchId => {
         const pronostico = picks.find(p => p.partido_id === matchId);
         const real = getPlayoffPartidoResuelto(matchId);
-        const { pts: ptsResultado, tipo } = calcPlayoffMatchPoints(pronostico, real, faseKey);
+        const { pts: ptsResultado, tipo } = calcPlayoffMatchPoints(pronostico, real, faseKey, pronosRonda);
         if (pronostico && pronostico.equipoA) {
           const label = `${getFlag(pronostico.equipoA)} ${pronostico.equipoA} ${pronostico.gL||'?'}-${pronostico.gV||'?'} ${pronostico.equipoB} ${getFlag(pronostico.equipoB)}`;
           if (ptsResultado > 0) {
-            filas.push({ label, pts: ptsResultado, sub: 'resultado del cruce' });
+            const pronA = normEquipo(pronostico.equipoA), pronB = normEquipo(pronostico.equipoB);
+            const realL = normEquipo(real.local), realV = normEquipo(real.visitante);
+            const esteSlotCoincide = (pronA===realL && pronB===realV) || (pronA===realV && pronB===realL);
+            filas.push({ label, pts: ptsResultado, sub: esteSlotCoincide ? 'resultado del cruce' : 'cruce acertado en otro cajón del cuadro' });
           } else if (real && real.gL !== '') {
             filas.push({ label, pts: 0, sub: tipo === 'cruce_fallado' ? 'cruce distinto al real' : 'resultado fallado' });
           }
@@ -3392,11 +3451,10 @@ function resetPlayoff() {
 function getWinnerSide(m) {
   const fijado = getPlayoffPartidoFijado(m.id);
   if (fijado && fijado.gL !== '' && fijado.gV !== '' && fijado.gL != null && fijado.gV != null) {
-    const gL = parseInt(fijado.gL), gV = parseInt(fijado.gV);
-    if (!isNaN(gL) && !isNaN(gV) && gL !== gV) {
-      return gL > gV ? 'A' : 'B';
-    }
-    return null; // empate sin desempate registrado: no se puede avanzar
+    const lado = resolverGanadorPartido(fijado);
+    if (lado === 'local') return 'A';
+    if (lado === 'visitante') return 'B';
+    return null; // empate sin desempate registrado (ni gol de oro ni penaltis): no se puede avanzar
   }
   return playoffWinners[m.id] || null;
 }
@@ -3947,6 +4005,7 @@ function renderPicksRondas(jugador) {
       <div class="section-label">${NOMBRES_RONDA[ronda.key]}</div>
       <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius)">`;
 
+    const pronosRonda = picks.filter(p => ronda.matchIds.includes(p.partido_id));
     ronda.matchIds.forEach(matchId => {
       const pronostico = picks.find(p => p.partido_id === matchId);
       const real = getPlayoffPartidoResuelto(matchId);
@@ -3958,7 +4017,7 @@ function renderPicksRondas(jugador) {
         html += `<div class="pick-row"><span>${getFlag(equipoRealA)} ${equipoRealA} <b>vs</b> ${getFlag(equipoRealB)} ${equipoRealB}</span><span style="color:var(--muted)">sin pronóstico</span></div>`;
         return;
       }
-      const { pts, tipo } = calcPlayoffMatchPoints(pronostico, real, ronda.faseKey);
+      const { pts, tipo } = calcPlayoffMatchPoints(pronostico, real, ronda.faseKey, pronosRonda);
       const tieneResultadoReal = real && real.gL !== '' && real.gV !== '' && real.gL != null;
       const resultHtml = tieneResultadoReal
         ? `<span class="pick-result pick-${tipo==='exact'?'exact':tipo==='sign'?'sign':'miss'}">${pronostico.gL}–${pronostico.gV} · ${pts}pts</span>`
@@ -4038,7 +4097,11 @@ function renderUpcomingEliminatoria() {
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:0">`;
 
     picksDelCruce.forEach(pick => {
-      const { pts, tipo } = calcPlayoffMatchPoints(pick, real, faseKey);
+      const rondaDeEsteMatch = RONDAS_ELIMINATORIA.find(r => r.matchIds.includes(matchId));
+      const pronosRondaJugador = rondaDeEsteMatch
+        ? state.pronosticos.filter(p => p.jugador === pick.jugador && rondaDeEsteMatch.matchIds.includes(p.partido_id))
+        : null;
+      const { pts, tipo } = calcPlayoffMatchPoints(pick, real, faseKey, pronosRondaJugador);
       const colorResultado = tipo === 'exact' ? 'var(--lime)' : tipo === 'sign' ? '#9fc050' : tieneResultadoReal ? 'var(--red)' : 'var(--white)';
       const ptsTag = tieneResultadoReal ? `<div style="font-size:0.65rem;font-weight:700;color:${pts>0?'var(--lime)':'var(--muted)'};margin-top:0.15rem">${pts>0?'+'+pts:'0'}pts</div>` : '';
       bloque += `<div style="padding:0.6rem 0.6rem;border-right:1px solid var(--border);border-bottom:1px solid var(--border);text-align:center">
