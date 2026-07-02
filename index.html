@@ -1154,7 +1154,7 @@ const DATOS_PARTIDOS_CSV = `id,fase,local,visitante,gL,gV,fecha,bonus
 32,Fase de grupos,Turquía,Paraguay,,,20 Jun,1
 33,Fase de grupos,Alemania,Costa de Marfil,,,21 Jun,1
 34,Fase de grupos,Ecuador,Curazao,,,21 Jun,1
-35,Fase de grupos,Países Bajos,Suecia,5,1,20 Jun,2
+35,Fase de grupos,Países Bajos,Suecia,,,20 Jun,2
 36,Fase de grupos,Túnez,Japón,,,21 Jun,1
 37,Fase de grupos,Bélgica,Irán,,,21 Jun,1
 38,Fase de grupos,Nueva Zelanda,Egipto,,,22 Jun,1
@@ -2286,31 +2286,6 @@ function getEquipoClasificadoPronosticado(picks, matchId) {
   return gL > gV ? p.equipoA : p.equipoB;
 }
 
-// Busca el ganador pronosticado de un cruce en toda la ronda (no solo en el slot exacto).
-// Si el jugador tiene los equipos reales en otro cajón, devuelve igualmente el ganador.
-function getEquipoClasificadoPronosticadoEnRonda(picks, matchId, matchIdsRonda, faseKey) {
-  const directo = getEquipoClasificadoPronosticado(picks, matchId);
-  if (directo) return directo;
-  const real = getPlayoffPartidoResuelto(matchId);
-  if (!real || real.gL === '' || real.gV === '' || !real.local || !real.visitante) return null;
-  const realL = normEquipo(real.local), realV = normEquipo(real.visitante);
-  if (!matchIdsRonda) return null;
-  for (const otherId of matchIdsRonda) {
-    if (otherId === matchId) continue;
-    const p = picks.find(pp => pp.partido_id === otherId);
-    if (!p || !p.equipoA || !p.equipoB) continue;
-    const pA = normEquipo(p.equipoA), pB = normEquipo(p.equipoB);
-    if ((pA === realL && pB === realV) || (pA === realV && pB === realL)) {
-      if (p.gL === '' || p.gV === '') return null;
-      const gL = parseInt(p.gL), gV = parseInt(p.gV);
-      if (isNaN(gL) || isNaN(gV) || gL === gV) return null;
-      if (pA === realL) return gL > gV ? p.equipoA : p.equipoB;
-      else              return gL > gV ? p.equipoB : p.equipoA;
-    }
-  }
-  return null;
-}
-
 // Equipo que REALMENTE ganó un cruce: prioriza el resultado real fijado en
 // _playoff_partidos, pero si todavía no existe, también acepta el ganador
 // elegido manualmente en el cuadro de Play Off (clic del usuario, guardado
@@ -2585,31 +2560,15 @@ function calcEquiposRondaPosterior(jugador, matchIdsRondaAnterior, ptsPorAcierto
     return normEquipo(ganadorPron) === normEquipo(pronostico.equipoA) ? pronostico.equipoB : pronostico.equipoA;
   };
 
-  // Lista REAL: equipos que ya avanzaron (partidos jugados). Bolsa mutable anti-duplicado.
-  const listaRealBolsa = matchIdsRondaAnterior.map(matchId => {
-    if (lado === 'ganador') return getEquipoClasificadoRealEstricto(matchId);
-    const partido = getPlayoffPartidoResuelto(matchId);
-    const ganador = getEquipoClasificadoRealEstricto(matchId);
-    if (!partido || !ganador || partido.gL === '' || partido.gV === '') return null;
-    return normEquipo(ganador) === normEquipo(partido.local) ? partido.visitante : partido.local;
-  }).filter(Boolean).map(normEquipo);
-
-  // Lista PRONOSTICADA: todos los picks del jugador en esta ronda (no solo slot exacto).
-  // Así si el jugador tiene Brasil en R16-12 y Brasil ganó R16-1, cuenta.
-  const picksDeRonda = picks.filter(p => matchIdsRondaAnterior.includes(p.partido_id));
-  const listaPron = picksDeRonda.map(p => {
-    if (lado === 'ganador') return getEquipoClasificadoPronosticado(picks, p.partido_id);
-    const ganadorPron = getEquipoClasificadoPronosticado(picks, p.partido_id);
-    if (!ganadorPron) return null;
-    return normEquipo(ganadorPron) === normEquipo(p.equipoA) ? p.equipoB : p.equipoA;
-  }).filter(Boolean);
+  const listaPron = matchIdsRondaAnterior.map(matchId => obtenerLadoPron(matchId)).filter(Boolean);
+  const listaRealNorm = matchIdsRondaAnterior
+    .map(matchId => obtenerLado(matchId))
+    .filter(Boolean)
+    .map(normEquipo);
 
   let aciertos = 0;
-  const bolsaUsada = [...listaRealBolsa];
   listaPron.forEach(eq => {
-    const normEq = normEquipo(eq);
-    const idx = bolsaUsada.indexOf(normEq);
-    if (idx !== -1) { aciertos++; bolsaUsada.splice(idx, 1); }
+    if (listaRealNorm.includes(normEquipo(eq))) aciertos++;
   });
   return { pts: aciertos * ptsPorAcierto, aciertos };
 }
@@ -3000,7 +2959,8 @@ function showDetalle(jugador, concepto) {
     if (modo === 'equipo') {
       const RONDA_ANTERIOR = { octavos: 0, cuartos: 1, semifinal: 2 };
       if (concepto2 in RONDA_ANTERIOR) {
-        // Misma lógica que calcEquiposRondaPosterior: lista vs lista anti-duplicado
+        // Para "Equipos X" sumamos TODOS los equipos que pasen de ronda,
+        // independientemente del slot exacto donde el jugador los puso.
         const matchIdsAnterior = RONDAS_ELIMINATORIA[RONDA_ANTERIOR[concepto2]].matchIds;
         const faseAnterior = RONDAS_ELIMINATORIA[RONDA_ANTERIOR[concepto2]].faseKey;
         const ptsClasif = CONFIG.PTS[faseAnterior]?.clasificado || 0;
@@ -3008,31 +2968,23 @@ function showDetalle(jugador, concepto) {
         const listaReal = matchIdsAnterior.map(id => getEquipoClasificadoRealEstricto(id)).filter(Boolean);
         const listaRealNorm = listaReal.map(normEquipo);
 
+        // Todos los picks del jugador en esa ronda, no solo el slot exacto.
         const picksRonda = picks.filter(p => matchIdsAnterior.includes(p.partido_id));
-        const listaPron = picksRonda.map(p => {
-          const g = getEquipoClasificadoPronosticado(picks, p.partido_id);
-          return g ? { equipo: g, matchId: p.partido_id } : null;
-        }).filter(Boolean);
+        const listaPron = picksRonda.map(p => getEquipoClasificadoPronosticado(picks, p.partido_id)).filter(Boolean);
 
         const realesUsados = new Set();
-        listaPron.forEach(({ equipo: pron, matchId }) => {
+        listaPron.forEach(pron => {
           const normPron = normEquipo(pron);
           const coincide = listaRealNorm.includes(normPron) && !realesUsados.has(normPron);
-          if (coincide) realesUsados.add(normPron);
-          const realSlot = getEquipoClasificadoRealEstricto(matchId);
-          filas.push({
-            label: `${getFlag(pron)} ${pron} avanza`,
-            pts: coincide ? ptsClasif : 0,
-            sub: coincide ? `✓ clasificado a ${concepto2 === 'octavos' ? 'octavos' : concepto2 === 'cuartos' ? 'cuartos' : 'semifinal'}`
-              : realSlot ? `real en slot: ${getFlag(realSlot)} ${realSlot}` : 'resultado pendiente'
-          });
-        });
-        listaReal.forEach(eq => {
-          if (!realesUsados.has(normEquipo(eq)) && !listaPron.some(p => normEquipo(p.equipo) === normEquipo(eq))) {
-            filas.push({ label: `${getFlag(eq)} ${eq} avanzó (sin pronóstico)`, pts: 0, sub: 'no pronosticado' });
+          if (coincide) {
+            realesUsados.add(normPron);
+            filas.push({
+              label: `${getFlag(pron)} ${pron} avanza de ronda`,
+              pts: ptsClasif,
+              sub: `✓ clasificado a ${concepto2 === 'octavos' ? 'octavos' : concepto2 === 'cuartos' ? 'cuartos' : 'semifinal'}`
+            });
           }
         });
-
       } else if (concepto2 === 'final') {
         const semiIds = ['semis-1','semis-2'];
         const ptsF = CONFIG.PTS['Semifinal']?.clasificado_final || 0;
@@ -3044,15 +2996,15 @@ function showDetalle(jugador, concepto) {
           if (!pron) return;
           const normPron = normEquipo(pron);
           const coincide = listaRealNormF.includes(normPron) && !realesUsadosF.has(normPron);
-          if (coincide) realesUsadosF.add(normPron);
-          const realSlot = getEquipoClasificadoRealEstricto(matchId);
-          filas.push({
-            label: `${getFlag(pron)} ${pron} finalista`,
-            pts: coincide ? ptsF : 0,
-            sub: coincide ? 'clasificado a la final ✓' : realSlot ? `real en slot: ${getFlag(realSlot)} ${realSlot}` : 'resultado pendiente'
-          });
+          if (coincide) {
+            realesUsadosF.add(normPron);
+            filas.push({
+              label: `${getFlag(pron)} ${pron} finalista`,
+              pts: ptsF,
+              sub: 'clasificado a la final ✓'
+            });
+          }
         });
-
       } else if (concepto2 === 'tercerPuesto') {
         const semiIds = ['semis-1','semis-2'];
         const ptsT = CONFIG.PTS['Semifinal']?.clasificado_3y4 || 0;
@@ -3073,13 +3025,14 @@ function showDetalle(jugador, concepto) {
           if (!perdedorPron) return;
           const normPerd = normEquipo(perdedorPron);
           const coincide = perdedoresNorm.includes(normPerd) && !realesUsadosT.has(normPerd);
-          if (coincide) realesUsadosT.add(normPerd);
-          const ganadorReal = getEquipoClasificadoRealEstricto(matchId);
-          filas.push({
-            label: `${getFlag(perdedorPron)} ${perdedorPron} a 3º/4º puesto`,
-            pts: coincide ? ptsT : 0,
-            sub: coincide ? 'clasificado al partido de consolación ✓' : ganadorReal ? `real: pasó ${getFlag(ganadorReal)} ${ganadorReal}` : 'resultado pendiente'
-          });
+          if (coincide) {
+            realesUsadosT.add(normPerd);
+            filas.push({
+              label: `${getFlag(perdedorPron)} ${perdedorPron} a 3º/4º puesto`,
+              pts: ptsT,
+              sub: 'clasificado al partido de consolación ✓'
+            });
+          }
         });
       }
     }
@@ -4166,9 +4119,6 @@ function renderUpcomingEliminatoria() {
     const real = getPlayoffPartidoResuelto(matchId);
     const tieneResultadoReal = real && real.gL !== '' && real.gV !== '' && real.gL != null;
 
-    // Partidos ya jugados van a la pestaña "Jugados", no aquí
-    if (tieneResultadoReal) return '';
-
     // Nombre real del cruce: si ya hay un partido fijado, usamos esos
     // nombres; si no, los equipos calculados en vivo (1º/2º de grupo o
     // mejor tercero asignado). Si aún no se puede resolver (grupo
@@ -4186,47 +4136,15 @@ function renderUpcomingEliminatoria() {
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:0">`;
 
-    const rondaDeEsteMatch = RONDAS_ELIMINATORIA.find(r => r.matchIds.includes(matchId));
-    const todosMatchIdsRonda = rondaDeEsteMatch ? rondaDeEsteMatch.matchIds : [];
-    const otrosMatchIdsRonda = todosMatchIdsRonda.filter(id => id !== matchId);
-
     picksDelCruce.forEach(pick => {
+      const rondaDeEsteMatch = RONDAS_ELIMINATORIA.find(r => r.matchIds.includes(matchId));
       const pronosRondaJugador = rondaDeEsteMatch
         ? state.pronosticos.filter(p => p.jugador === pick.jugador && rondaDeEsteMatch.matchIds.includes(p.partido_id))
         : null;
       const { pts, tipo } = calcPlayoffMatchPoints(pick, real, faseKey, pronosRondaJugador);
       const colorResultado = tipo === 'exact' ? 'var(--lime)' : tipo === 'sign' ? '#9fc050' : tieneResultadoReal ? 'var(--red)' : 'var(--white)';
       const ptsTag = tieneResultadoReal ? `<div style="font-size:0.65rem;font-weight:700;color:${pts>0?'var(--lime)':'var(--muted)'};margin-top:0.15rem">${pts>0?'+'+pts:'0'}pts</div>` : '';
-
-      const normA = normEquipo(pick.equipoA), normB = normEquipo(pick.equipoB);
-      const normRA = normEquipo(equipoRealA), normRB = normEquipo(equipoRealB);
-      const esEquipoReal = equipoRealA !== '?' && equipoRealB !== '?';
-      const matchExacto = esEquipoReal && ((normA === normRA && normB === normRB) || (normA === normRB && normB === normRA));
-      let matchRonda = false;
-      if (!matchExacto && esEquipoReal) {
-        matchRonda = otrosMatchIdsRonda.some(otherId => {
-          const otroReal = getPlayoffPartidoResuelto(otherId);
-          const infoOtro = cruceInfoPorMatch[otherId];
-          const oA = normEquipo((otroReal && otroReal.local) || infoOtro?.teamA || '');
-          const oB = normEquipo((otroReal && otroReal.visitante) || infoOtro?.teamB || '');
-          if (!oA || !oB) return false;
-          return (normA === oA && normB === oB) || (normA === oB && normB === oA);
-        });
-      }
-      let cardBorder = '1px solid var(--border)';
-      let cardBg = 'transparent';
-      let cardBadge = '';
-      if (matchExacto) {
-        cardBorder = '2px solid var(--gold)';
-        cardBg = 'oklch(from var(--gold) l c h / 0.08)';
-        cardBadge = `<div style="font-size:0.55rem;font-weight:700;color:var(--gold);letter-spacing:0.04em;margin-bottom:0.2rem;text-transform:uppercase">✓ cruce exacto</div>`;
-      } else if (matchRonda) {
-        cardBorder = '2px solid #e07c2a';
-        cardBg = 'oklch(from #e07c2a l c h / 0.08)';
-        cardBadge = `<div style="font-size:0.55rem;font-weight:700;color:#e07c2a;letter-spacing:0.04em;margin-bottom:0.2rem;text-transform:uppercase">≈ otro slot</div>`;
-      }
-      bloque += `<div style="padding:0.6rem 0.6rem;border-right:${cardBorder};border-bottom:${cardBorder};border-top:${matchExacto||matchRonda?cardBorder:'1px solid var(--border)'};border-left:${matchExacto||matchRonda?cardBorder:'1px solid var(--border)'};background:${cardBg};text-align:center;margin:${matchExacto||matchRonda?'2px':'0'};border-radius:${matchExacto||matchRonda?'4px':'0'}">
-        ${cardBadge}
+      bloque += `<div style="padding:0.6rem 0.6rem;border-right:1px solid var(--border);border-bottom:1px solid var(--border);text-align:center">
         <div style="font-size:0.68rem;color:var(--muted);font-weight:600;margin-bottom:0.3rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${pick.jugador}</div>
         <div style="font-size:0.66rem;color:var(--white);line-height:1.3">${getFlag(pick.equipoA)} ${pick.equipoA}<br>${getFlag(pick.equipoB)} ${pick.equipoB}</div>
         <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:${colorResultado};margin-top:0.2rem">${pick.gL||'?'}–${pick.gV||'?'}</div>
