@@ -544,6 +544,76 @@
       "penaltis": "local",
       "fecha": "4 Jul",
       "bonus": 1
+    },
+    {
+      "ronda": "cuartos",
+      "match": "cuartos-1",
+      "local": "",
+      "visitante": "",
+      "gL": "2",
+      "gV": "0",
+      "fecha": "4 Jul",
+      "bonus": 1
+    },
+    {
+      "ronda": "cuartos",
+      "match": "cuartos-2",
+      "local": "",
+      "visitante": "",
+      "gL": "",
+      "gV": "",
+      "fecha": "4 Jul",
+      "bonus": 1
+    },
+    {
+      "ronda": "cuartos",
+      "match": "cuartos-3",
+      "local": "",
+      "visitante": "",
+      "gL": "",
+      "gV": "",
+      "fecha": "4 Jul",
+      "bonus": 1
+    },
+    {
+      "ronda": "cuartos",
+      "match": "cuartos-4",
+      "local": "",
+      "visitante": "",
+      "gL": "",
+      "gV": "",
+      "fecha": "4 Jul",
+      "bonus": 1
+    },
+    {
+      "ronda": "semis",
+      "match": "semis-1",
+      "local": "",
+      "visitante": "",
+      "gL": "",
+      "gV": "",
+      "fecha": "4 Jul",
+      "bonus": 1
+    },
+    {
+      "ronda": "semis",
+      "match": "semis-2",
+      "local": "",
+      "visitante": "",
+      "gL": "",
+      "gV": "",
+      "fecha": "4 Jul",
+      "bonus": 1
+    },
+    {
+      "ronda": "final",
+      "match": "final-1",
+      "local": "",
+      "visitante": "",
+      "gL": "",
+      "gV": "",
+      "fecha": "4 Jul",
+      "bonus": 1
     }
   ],
   "_ayuda": {
