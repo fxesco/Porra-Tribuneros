@@ -288,15 +288,15 @@
     "gV": "1"
   },
   "_predicciones": {
-    "campeon": "",
-    "subcampeon": "",
-    "tercero": ""
+    "campeon": "España",
+    "subcampeon": "Argentina",
+    "tercero": "Inglaterra"
   },
   "_premios": {
-    "bota_oro": "",
-    "bota_plata": "",
-    "bota_bronce": "",
-    "balon_oro": "",
+    "bota_oro": "Mbappe",
+    "bota_plata": "Messi",
+    "bota_bronce": "Halaand",
+    "balon_oro": "Rodri",
     "balon_plata": "",
     "balon_bronce": ""
   },
@@ -610,8 +610,8 @@
       "match": "final-1",
       "local": "",
       "visitante": "",
-      "gL": "",
-      "gV": "",
+      "gL": "1"'
+      "gV": "0",
       "fecha": "4 Jul",
       "bonus": 1
     }
