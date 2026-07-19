@@ -288,15 +288,15 @@
     "gV": "1"
   },
   "_predicciones": {
-    "campeon": "España",
-    "subcampeon": "Argentina",
-    "tercero": "Inglaterra"
+    "campeon": "",
+    "subcampeon": "",
+    "tercero": ""
   },
   "_premios": {
-    "bota_oro": "Mbappe",
-    "bota_plata": "Messi",
-    "bota_bronce": "Halaand",
-    "balon_oro": "Rodri",
+    "bota_oro": "",
+    "bota_plata": "",
+    "bota_bronce": "",
+    "balon_oro": "",
     "balon_plata": "",
     "balon_bronce": ""
   },
